@@ -360,6 +360,55 @@ embedding = cohere.embed(text)
     - Supports integrating with annotation tools, to collaborate on labeling data directly.
     - Use `.dvc` files that point to your data stored on Dagshub or another data storage.
 
+### Kubeflow
+
+- **Kubeflow** is an ecosystem of open-source projects to address each stage of the ML SDLC. Kubeflow makes AI/ML on Kubernetes portable and scalable.
+    - Standalone Kubeflow components are meant to be installed individually, as opposed to the bundle called **Kubeflow Platform**.
+        - Kubeflow Platform includes Kubeflow Noteooks, and Central Dashboard, as well as data management viewer and TensorBoards for visualizations.
+
+- *Kubeflow Components*: KServe (online and batch inference in model serving), Trainer (large scale distributed training/tuning), Pipelines, Notebooks, Katlib (model optimization.hyperparam tuning), Model Registry, Dashboard, MPI operator, Spark Operator (data prep and feature engineering), Feast (feature store for online/offline features)
+
+- *AI Ecosystem components*: Pytorch, XGBoost, MPI, Optuna, HuggingFace, Megatron-LM, TensorFlow, Sklearn, DeepSpeed, Hyperopt, Horovod.
+
+- Using the Python SDK (basics):
+
+```python
+pip install kfp #kubeflow pipelines
+#Components, python function wrapped with decorator
+from kfp import dsl
+@dsl.component
+def add(a: int, b: int) -> int:
+    return a + b
+
+@dsl.pipeline(name="my-example-pipeline")
+def my_pipeline():
+    # pass outputs to other components here
+
+# Turn pipeline into yaml
+from kfp import compiler
+compiler.compiler().compile(my_pipeline, 'pipeline.yaml')
+```
+
+- Example workflow:
+
+```python
+@dsl.component
+def preprocess(data_path: str) -> str:
+    ...
+
+@dsl.component
+def train(cleaned_data: str):
+    ...
+
+@dsl.pipeline
+def my_pipeline():
+    step1 = preprocess('gs://bucket/data.csv')
+    train(step1.output)
+
+```
+
+- Note: Use `kfp.Client(host='...')` and pass credentials or tokens especially if hosted on GCP/AWS.
+
 ### LangChain
 
 - **LangChain** is a framework that uses existing LLMs (chatGPT, Gemini, Claude, etc), to build applications using the pretrained models and chain sequences of operations together to create complex workflows. 
@@ -440,7 +489,126 @@ print(result) # Output: HELLO WORLD
 
 ## Cloud Services
 
+### Azure
+
+#### Azure AI Foundry
+
+**Azure AI Foundry** is Microsoft's enterprise-grade platform for building, managing, and operationalizing AI solutions, particularly focused on the development and deployment of **large language models (LLMs)** and **foundation models**. It combines data preparation, experimentation, prompt engineering, fine-tuning, and secure deployment in a unified environment designed for MLOps and LLMOps workflows.
+
+- **Core Capabilities**
+
+- **Multimodal Model Support**
+  - Text, image, and code generation models (e.g., OpenAI, Phi-3, Florence, GPT, DALL·E)
+  - Foundation model catalog with evaluation metrics and sandboxed exploration
+
+- **Model Customization & Prompt Engineering**
+  - Prompt flow design with chaining logic
+  - Zero-shot, few-shot, or fine-tuned modes
+  - Evaluate prompts using human feedback or metrics
+
+- **AI Studio & Foundry Notebooks**
+  - Integrated with VS Code and Jupyter
+  - Secure workspace for Python-based data prep and model iteration
+  - Git integration and CI/CD-friendly
+
+- **Data-Centric Engineering**
+  - Integrates directly with **Microsoft Fabric** (e.g., OneLake, Delta tables)
+  - Data lineage tracking and labeling tools
+  - Grounded in **Responsible AI** practices (transparency, fairness, auditability)
+
+- **Model Evaluation & Deployment**
+  - Human-in-the-loop testing and blind review
+  - Evaluate across accuracy, latency, cost, safety
+  - Managed endpoints via **Azure Kubernetes Service (AKS)** or **Container Apps**
+
+## MLOps & LLMOps Integration
+
+- **Model Registry**
+  - Track, version, and compare foundation models
+  - Store evaluation metrics, prompt flows, and fine-tuned artifacts
+
+- **Pipeline Orchestration**
+  - Connect to **Azure ML Pipelines**, **Azure Data Factory**, and **GitHub Actions**
+  - Trigger workflows based on new data, model drift, or events
+
+- **Responsible AI Integration**
+  - Interpretability dashboards
+  - Built-in content moderation and safety filters
+
+- **Enterprise Security**
+
+- **Azure Key Vault** for managing secrets, tokens, and credentials
+- **Managed Identities** for workload identity isolation
+- **VNet Integration**, **Private Endpoints**, and **RBAC**
+
+##### Integration with Azure API Management (APIM)
+
+Azure AI Foundry supports **API-level abstraction and management** for serving your LLMs or RAG applications using APIM. Key benefits:
+
+- **Secure Access** to AI endpoints using OAuth2, keys, or Azure AD
+- **Rate Limiting / Throttling** for fair usage and DDoS protection
+- **Request/Response Logging** for audit and debugging
+- **Versioned Model APIs** for gradual rollout and rollback
+- **Centralized Gateway** for frontend apps, partner orgs, and internal teams
+
+### Example Integration Flow
+
+```text
+Client App (Web / Mobile / CLI)
+        │
+        ▼
+Azure API Management
+        │
+        ▼
+RAG App / LLM Inference Endpoint (AKS or Azure ML Managed Endpoint)
+        │
+        ▼
+Vector Store (e.g., Faiss) + Data Sources
+```
+
 ### Google
 
 #### Vertex AI
+
+**Vertex AI** is Google Cloud's fully managed, end-to-end machine learning (ML) platform that unifies the development and deployment of ML models. It abstracts infrastructure while offering flexibility and modularity for advanced ML practitioners.
+
+- **Model Training**
+  - Custom training using containers or prebuilt frameworks (TensorFlow, PyTorch, Scikit-Learn)
+  - Distributed training, hyperparameter tuning, and automatic resource scaling
+  - Managed pipelines using **Vertex AI Pipelines** (based on KFP v2)
+
+- **Model Deployment**
+  - Fully managed, autoscaled prediction endpoints
+  - Supports real-time (online) and batch (offline) predictions
+  - A/B testing and model monitoring built-in
+
+- **Feature Store**
+  - Centralized repository for storing, sharing, and reusing ML features
+  - Online (low-latency) and offline (batch) serving capabilities
+  - Feature consistency between training and serving
+
+- **Vertex AI Workbench**
+  - Managed Jupyter notebooks with full GCP integration
+  - Supports Git sync, scheduling, BigQuery, and auto-shutdown
+
+- **Vertex AI Matching Engine**
+  - Approximate nearest neighbor (ANN) vector similarity search
+  - Built for large-scale embedding search (e.g., for RAG, recommender systems)
+  - Uses tree-AH and brute force options with optimized latency
+
+- **Vertex AI Model Registry**
+  - Central registry to manage model versions, metadata, and lineage
+  - Integrates with CI/CD workflows and governance policies
+
+- **LLM + GenAI Integration**
+
+- **PaLM 2 / Gemini APIs** via **Vertex AI Studio**
+- **Text Embedding APIs**, **Codey**, and **Imagen** models
+- Supports **prompt tuning**, **adapter-based fine-tuning**, and **RLHF-like flows**
+
+- **Ecosystem Integration**
+
+- **BigQuery ML** for SQL-based ML workflows
+- **TensorBoard**, **Weights & Biases**, and **MLflow** integration
+- CI/CD with **Cloud Build**, **Cloud Functions**, **Artifact Registr**
 
