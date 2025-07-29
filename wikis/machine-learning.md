@@ -5,6 +5,7 @@
     - [Anaconda](#anaconda)
     - [Jupyter Notebooks](#jupyter-notebooks)
     - [Data Version Control](#dvc)
+    - [Weights and Biases](#weights--biases)
     - [MLflow](#mlflow)
     - [DagsHub](#dagshub)
     - [Langchain](#langchain)
@@ -239,6 +240,41 @@ dvc cache dir
 dvc gc # remove unused cache files
 dvc gc --workspace # remove files not in current workspace
 ```
+
+### Weights & Biases
+
+- **W&B Platform** is the platform that helps track and visualize machine learning models, experiments and more.
+    - Experiment tracking: Logs model run metrics, hyperparams, versions, configs, etc.
+    - Model versioning: Use the model registry.
+    - Dataset versioning: `wandb artifacts` to track changes to datasets
+    - Collaborative reporting: Teams can see and comment on runs.
+    - Hyperparameter tuning:
+    - Training visualizations
+    - Monitoring:
+
+- W&B *integrates* with: Python SDK, PyTorch, TensorFlow, Hugging Face, sklearn, and notebooks.
+
+```python
+import wandb
+
+wandb.init(project="my-ml-project", config={
+    "epochs": 10,
+    "batch_size": 32,
+    "learning_rate": 0.001
+})
+
+for epoch in range(10):
+    train_loss = 0.01 * epoch
+    val_accuracy = 0.8 + 0.01 * epoch
+    wandb.log({"train_loss": train_loss, "val_accuracy": val_accuracy})
+```
+
+- **W&B Weave** - lets you use AI models in your application with features like tracing, output evalutation, cost estimates, and inference service with playground for comparing LLMs.
+
+- **W&B Models** - Mangage AI model development with training, fine-tuning, reporting, hyperparameter sweeps, model registry.
+
+- **Core components of W&B Models/Weave**: Registry, Artifacts, Reports, Automations, Secrets.
+
 
 ### MLFlow
 
