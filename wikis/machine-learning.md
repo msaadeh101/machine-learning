@@ -70,6 +70,17 @@ prediction = model.predict(new_data)
 - `X_test` - your test features.
 - `y_test` - your test labels.
 
+```mermaid
+graph TD
+    A[Raw Dataset] --> B[Load with pandas into DataFrame]
+    B --> C[Clean & Preprocess Data]
+    C --> D[Feature Engineering]
+    D --> E[Split into Train/Test Sets]
+    E --> F[Train Model on Training Set]
+    F --> G[Evaluate on Test Set]
+    G --> H[Trained Model Ready for Use]
+```
+
 ## Tools
 
 ### Python and Libraries
