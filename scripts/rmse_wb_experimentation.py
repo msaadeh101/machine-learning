@@ -17,7 +17,8 @@ import pandas as pd
 def linear_prediction(X: np.ndarray, weights: List[float], bias: float) -> np.ndarray:
     """
     Make predictions using linear combination of features.
-    (prediction = X * weights + biases)
+    (prediction = dot(X * weights) + biases)
+    Takes input Data (X) and combines with model's params (weights/bias)
     
     Args:
         X: Input features (n_samples, n_features), 2D numpy array
@@ -33,6 +34,7 @@ def linear_prediction(X: np.ndarray, weights: List[float], bias: float) -> np.nd
 def calculate_rmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     """
     Calculate Root Mean Square Error. RMSE calculates the accuracy of regression models.
+    The model's loss function, measures avg magnitude of errors betwqeen y_true and y_pred
     
     Args:
         y_true: True values
@@ -50,6 +52,9 @@ def weight_bias_rmse_evaluator(X: np.ndarray, y: np.ndarray,
                               n_samples: int = 100) -> pd.DataFrame:
     """
     Evaluate RMSE for different combinations of weights and bias.
+    Traing loop: iterates over n_samples, randomly generating new w+b within
+    predefined ranges. linear_prediction makes new predictions. Calculates
+    RMSE for each param. Stores them into a dataframe.
     
     Args:
         X: Input features (n_samples, n_features)
@@ -88,7 +93,8 @@ def weight_bias_rmse_evaluator(X: np.ndarray, y: np.ndarray,
 
 def find_best_parameters(results_df: pd.DataFrame, top_n: int = 5) -> pd.DataFrame:
     """
-    Find the best performing parameter combinations.
+    Find the best performing parameter combinations from the weight_bias_rmse_evaluator
+    with simple nsmallest() method, identifying the "best" models found
     
     Args:
         results_df: DataFrame from weight_bias_rmse_evaluator
