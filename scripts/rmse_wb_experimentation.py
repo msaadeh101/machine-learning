@@ -170,7 +170,7 @@ def load_csv_data(filepath: str, feature_columns: List[str], target_column: str,
     
     return X, y
 
-# Example usage and demonstration
+# Usage
 if __name__ == "__main__":
     # Create sample data
     print("Creating sample dataset...")
@@ -182,7 +182,8 @@ if __name__ == "__main__":
     weight_ranges = [(-5, 5), (-5, 5)]  # Range for each weight
     bias_range = (-3, 3)  # Range for bias
     
-    print("\nEvaluating different weight and bias combinations...")
+    print("\nEvaluating different weight and bias combinations..")
+
     # Evaluate different combinations
     results = weight_bias_rmse_evaluator(X, y, weight_ranges, bias_range, n_samples=1000)
     
@@ -191,14 +192,14 @@ if __name__ == "__main__":
     best_params = find_best_parameters(results, top_n=5)
     print(best_params.round(4))
     
-    # Show some statistics
+    # Show some statistics to 4 decimal places
     print(f"\nRMSE Statistics:")
     print(f"Best RMSE: {results['rmse'].min():.4f}")
     print(f"Worst RMSE: {results['rmse'].max():.4f}")
     print(f"Mean RMSE: {results['rmse'].mean():.4f}")
     print(f"Std RMSE: {results['rmse'].std():.4f}")
     
-    # Plot results
+    # Plot some of the results
     print("\nGenerating plots...")
     plot_rmse_vs_parameter(results, 'weight_0', 'RMSE vs Weight 0')
     plot_rmse_vs_parameter(results, 'weight_1', 'RMSE vs Weight 1')

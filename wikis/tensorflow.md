@@ -6,14 +6,14 @@ This guide walks you from **zero knowledge of TensorFlow** to confidently buildi
 ## Table of Contents
 
 1. [What is TensorFlow?](#what-is-tensorflow)
-2. [What is a Tensor?](#what-is-a-tensor)
-3. [Installing TensorFlow](#installing-tensorflow)
-4. [Tensor Operations](#tensor-operations)
-5. [Building Your First Neural Network](#building-your-first-neural-network)
-6. [Understanding the Keras API](#understanding-the-keras-api)
-7. [Model Evaluation & Prediction](#model-evaluation--prediction)
-8. [Callbacks & TensorBoard](#callbacks--tensorboard)
-9. [Saving and Loading Models](#saving-and-loading-models)
+1. [What is a Tensor?](#what-is-a-tensor)
+1. [Installing TensorFlow](#installing-tensorflow)
+1. [Tensor Operations](#tensor-operations)
+1. [Building Your First Neural Network](#building-your-first-neural-network)
+1. [Understanding the Keras API](#understanding-the-keras-api)
+1. [Model Evaluation & Prediction](#model-evaluation--prediction)
+1. [Callbacks & TensorBoard](#callbacks--tensorboard)
+1. [Saving and Loading Models](#saving-and-loading-models)
 
 
 ## What is TensorFlow?
@@ -22,7 +22,69 @@ This guide walks you from **zero knowledge of TensorFlow** to confidently buildi
 
 - Creating computational graphs
 - Running operations on GPUs/TPUs
-- High-level APIs for fast model building (`tf.keras`)
+- High-level APIs for fast model building (`tf.keras`) - based on the original Keras API for deep learning.
+
+### Keras
+
+Take this Model Architecture, we will apply both a functional API approach and a Sequential model approach with the same data (MNST)
+
+```txt
+(input: 784-dimensional vectors)
+       ↧
+[Dense (64 units, relu activation)]
+       ↧
+[Dense (64 units, relu activation)]
+       ↧
+[Dense (10 units, softmax activation)]
+       ↧
+(output: logits of a probability distribution over 10 classes)
+```
+- input: typically from flattened grayscale images. 28x28=784, input layer accepts batch size of 784
+- Dense 64: each fully connected layer with 64 neurons. Applies reLU activation `f(x) = max(0,x)`
+- Dense 10: Final layer with 10 neurons, one for each class (0-9 handwritten digits), 
+- output: shape is 10
+
+#### Functional API
+
+- The **Keras functional API** is the way to create models that are more flexible than keras.Sequential. Can handle non-linear topology, shared layers, and multiple inputs/outputs.
+
+```python
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Input, Dense
+
+# Input layer
+inputs = Input(shape=(784,))
+
+# Hidden layers
+x = Dense(64, activation='relu')(inputs)
+x = Dense(64, activation='relu')(x)
+
+# Output layer
+outputs = Dense(10, activation='softmax')(x)
+
+# Define the model
+model = Model(inputs=inputs, outputs=outputs)
+
+model.summary()
+```
+
+#### Sequential
+
+- Use Sequential when you have a simple stack.
+
+```python
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+
+model = Sequential([
+    Dense(64, activation='relu', input_shape=(784,)),
+    Dense(64, activation='relu'),
+    Dense(10, activation='softmax')
+])
+
+model.summary()
+
+```
 
 ## What is a Tensor?
 
@@ -98,6 +160,10 @@ print("Matrix Multiply:\n", tf.matmul(a, b))
 cart_totals = tf.constant([120.0, 80.0, 150.0, 60.0])
 avg_cart_value = tf.reduce_mean(cart_totals)
 ```
+
+- `tf.transpose()` switches the rows and columns. It reorders the dimensions of a tensor.
+    - For example, matrix multiplcation requires inner dimensions to match, so you may need to transpose them.
+    - Certain orders/shape are required for `keras.layers.LTSM` or a `Transformer`.
 
 ## Building Your First Neural Network
 
@@ -254,7 +320,7 @@ print("Predicted class:", tf.argmax(prediction[0]).numpy())
 
 ## Callbacks & TensorBoard
 
-- Tack training and log metrics with **TensorBoard**
+- Tack training and log metrics with **TensorBoard**. TensorBoard is a web-based dashboard that lets you visualize traning metrics like loss/accuracy, monitor learning in real time, compare multiple training runs, inspect the model graphs, weights, histograms, etc.
 
 ```python
 from tensorflow.keras.callbacks import TensorBoard
@@ -274,10 +340,22 @@ tensorboard --logdir=logs/fit
 
 ## Saving and Loading Models
 
+- Saving and Loading a model is essential for reusing the trained model, collaboration and deployment.
+    - Note, `.h5` is HDF5 format, standard for storing large numerical data.
+    - Included in the saved file is:
+        - Architecture (layers, activations, input shape)
+        - Model weights (learned parameters)
+        - Optimizer state (so you can resume training)
+        - compilation info (loss, metrics)
+
 ```python
-# Save entire model
+# Train and save
+model.fit(X_train, y_train, epochs=10)
 model.save('my_model.h5')
-# Or Load model
+
+# ... Later, or in another script
 from tensorflow.keras.models import load_model
 model = load_model('my_model.h5')
+predictions = model.predict(X_test)
 ```
+- Needed for serving with `TF Lite `or `TF.js`
