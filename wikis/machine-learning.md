@@ -7,7 +7,10 @@
     - [Data Version Control](#dvc)
     - [Weights and Biases](#weights--biases)
     - [MLflow](#mlflow)
+    - [Cohere](#cohere)
+    - [Pinecone](#pinecone)
     - [DagsHub](#dagshub)
+    - [Kubeflow](#kubeflow)
     - [Langchain](#langchain)
 - [MLOps](#mlops)
 
@@ -808,6 +811,33 @@ Vector Store (e.g., Faiss) + Data Sources
 
 ## MLOps
 
-- Design and implement end-to-end ML system (CICD, Iac, reproducability, lifecycle management, monitoring)
-- Use Azure AI to design and deploy conversational AI using NLU
+- **MLOps** bridges the gap between the experimental, development phase of machine learning and the CI/CD practices of software engineering. The goal is to standardize and streamline the entire ML lifecycle, from **data collection** and **model development** to **deployment**, **monitoring**, and **retraining**.
+
+- **Examples of MLOps in Action**:
+  - Fraud Detection System: Real-time monitoring of transaction patterns, auto-retraining when drift is detected.
+  - Recommendation Engine for E-Commerce: Daily batch updates for product recommendations.
+  - Predictive Maintencance in Manufacturing: Streaming IoT data in ML Pipelines.
+
+- **MLOps Principles**:
+  - Automation: data ingestion, preprocessing, model training, validation, deployment.
+  - Versioning and Reproducability: tracking changes in data (Using DVC) code, models, and infrastructure (git). Ensure the same results can be repeated under the same conditions.
+  - CI/CD:
+  - CT (Continuous Training): Automatic retraining of ML models in prod when new data becomes available or model performance degrades.
+  - Continuous Monitoring: Real-time monitoring of model performance, data quality and system health. Monitor metrics, API calls, etc.
+  - Model Governance: AI Ethics, Efficiency, Security, Compliance.
+  - Collaboration: Integrate Data Scientists, ML Engineers, Operations teams
+
+- **Trending MLOps Technologies**:
+
+| Category | Tools & Platforms | Details | Open-Source Alternatives |
+|----------|-----------------|---------|-----------------------|
+| **Experiment Tracking** | MLflow, W&B, Neptune.ai | Track experiments, hyperparameters, and results. Enable reproducibility, collaboration, and comparison of ML runs. | Sacred, Guild AI, Polyaxon |
+| **Data Versioning** | DVC, Pachyderm, LakeFS | Manage datasets like code, version large files, ensure reproducibility of ML pipelines, and enable data lineage tracking. | Git LFS, Quilt, Delta Lake |
+| **Model Serving** | Seldon Core, KFServing, BentoML, TorchServe | Deploy trained models to production with *REST/gRPC endpoints*, enable scaling **on top of Kubernetes**, and manage A/B testing or canary releases. | MLServer, Ray Serve, Triton Inference Server |
+| **Pipelines** | Kubeflow Pipelines, Apache Airflow, ZenML | Orchestrate and automate ML workflows, from data ingestion to model deployment, with reproducibility and scheduling. | Metaflow, Prefect, Flyte |
+| **Monitoring** | Evidently AI, Arize AI, WhyLabs | Monitor model performance, detect data drift, identify anomalies, and alert when retraining is needed. | Prometheus + Grafana, OpenInference, Superwise community edition |
+| **Cloud Platforms** | AWS SageMaker, Azure ML, GCP Vertex AI, Databricks | Fully managed ML platforms offering training, deployment, data labeling, and integrated MLOps capabilities. | OpenMLOps, OpenShift AI, MLRun |
+| **Containers & Orchestration** | Docker,K8s, Helm | Package models/applications as containers, orchestrate workloads, and manage deployments with repeatable Helm charts. | Podman, OpenKruise, Kustomize |
+
+
 
