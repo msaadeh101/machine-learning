@@ -9,6 +9,7 @@
     - [MLflow](#mlflow)
     - [DagsHub](#dagshub)
     - [Langchain](#langchain)
+- [MLOps](#mlops)
 
 # Machine Learning
 
@@ -534,6 +535,152 @@ result = chain.invoke("hello world")
 print(result) # Output: HELLO WORLD
 ```
 
+#### Embeddings in RAG workflow
+
+- **Embeddings** are numerical representations of text that capture semantic meaning. Questions to the LLM get embedded into a vector, and then you perform a similarity search on the vector database. You then retreive the most similar documents and pass them to the LLM as context.
+
+- Documents are *split* up since the context window of a a LLM is lmited. Splitting a document allows for the chunks to fit in the LLM context. You can use a package like `tiktoken` to see how large docs are. Would use `langchain.text_splitter` to help with recursive character splitting over large docs. These chunks are turned to vectors by an embedding model, and then these vectors are stored in a database to enable fast similarity searches.
+
+- An embedding model, like `text-embedding-3-small` is what converts the text into a vector.
+
+```python
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough
+from langchain_community.vectorstores import FAISS
+from langchain_core.documents import Document
+
+# 1. Define your components (including a retriever)
+prompt = ChatPromptTemplate.from_template(
+    "Answer the question based only on the following context:\n{context}\n\nQuestion: {question}"
+)
+llm = ChatOpenAI(model="gpt-4o-mini")
+output_parser = StrOutputParser()
+
+# Create a simple vector store and a retriever
+documents = [
+    Document(page_content="The brave knight Sir Reginald defeated a dragon."),
+    Document(page_content="Dragons are legendary serpentine creatures of immense power."),
+    Document(page_content="Sir Reginald was known for his shiny armor.")
+]
+vector_store = FAISS.from_documents(documents, OpenAIEmbeddings())
+retriever = vector_store.as_retriever()
+
+# 2. Chain them using RunnablePassthrough to pass both the context and question to the prompt
+rag_chain = (
+    {
+        "context": retriever,  # This retrieves relevant documents based on the input
+        "question": RunnablePassthrough(),  # This passes the original input ("brave knight") to the next step
+    }
+    | prompt
+    | llm
+    | output_parser
+)
+
+# 3. Invoke the new RAG chain
+result = rag_chain.invoke("Tell me about the brave knight.")
+print(result)
+```
+- Documents with similar vectors have similar semantic meaning. When you search, you measure the distance between questions vector <-> documents vector. Smaller distance means higher degree of similarity. This is a **similarity seach**.
+- A **prompt** is the template that contains the placeholders for context, and question. When you invoke the chain, context/question are inserted which creates a complete prompt. THIS is passed to the LLM and used to generate the response. 
+  - Invoke a chain: `chain.invoke({"context": $context, "question": $question})`
+  - Pull a RAG template: `hub.pull("rlm/rag-prompt")`
+
+- Pass **Structured Output** to the LLM to get desired output using pydantic and `llm.with_structured_output(PydanticClass)`
+  - Pass PydanticClass DATA_SOURCES dictionary so the llm can fill in the information.
+
+- Two examples:
+
+```python
+from langchain_core.pydantic_v1 import BaseModel, Field
+from langchain_core.output_parsers import JsonOutputParser
+
+# 1. Define the desired output schema using Pydantic BaseModel
+# This schema dictates the structure, field names, and data types
+class Book(BaseModel):
+    """Information about a book."""
+    title: str = Field(description="The title of the book")
+    author: str = Field(description="The author of the book")
+    publication_year: int = Field(description="The year the book was published")
+    genre: str = Field(description="The primary genre of the book")
+    is_fiction: bool = Field(description="True if the book is fiction, False otherwise")
+
+# 2. Initialize the ChatOpenAI model
+# We use .with_structured_output() to tell the model to generate output
+# conforming to our Pydantic schema. This implicitly handles tool calling
+# and response parsing for OpenAI's function calling capabilities.
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0).with_structured_output(Book)
+
+```
+
+
+```python
+# 1. Define your data sources
+# In a real application, these might be databases, APIs, specific documents, etc.
+# Here, we'll use a simple dictionary mapping IDs to content.
+DATA_SOURCES = {
+    "1": {"name": "Product Catalog", "content": "This source contains information about electronic gadgets, clothing, and home appliances."},
+    "2": {"name": "Customer Support FAQs", "content": "This source has answers to frequently asked questions regarding order status, returns, and technical issues."},
+    "3": {"name": "Company News & Events", "content": "This source provides details about recent company announcements, upcoming events, and press releases."},
+    "4": {"name": "Employee Directory", "content": "This source lists employee contact information, departments, and roles."}
+}
+
+# Extract available data source IDs for the LLM prompt
+available_data_source_ids = list(DATA_SOURCES.keys())
+
+# 2. Define the desired structured output for the LLM
+# This Pydantic model tells the LLM exactly what information to extract:
+# which data source ID to choose and why.
+class DataSourceChoice(BaseModel):
+    """Represents the chosen data source based on a user's question."""
+    # Using Literal ensures the LLM can only pick from the predefined IDs
+    chosen_id: Literal[tuple(available_data_source_ids)] = Field(
+        description=f"The ID of the most relevant data source for the user's question. Choose from: {', '.join(available_data_source_ids)}"
+    )
+    reasoning: str = Field(
+        description="Brief explanation of why this data source was chosen."
+    )
+
+# 3. Set up the LLM with structured output
+# We bind the DataSourceChoice schema to the LLM using .with_structured_output().
+# This makes the LLM try to "fill in" an instance of DataSourceChoice.
+llm = ChatOpenAI(model="gpt-4o-mini", temperature=0).with_structured_output(DataSourceChoice)
+
+# 4. Create a prompt template for the LLM
+# The prompt clearly instructs the LLM on its task: to select a data source.
+# It also provides the list of available data sources.
+prompt_template = ChatPromptTemplate.from_messages(
+    [
+        ("system", (
+            "You are a helpful assistant whose sole purpose is to identify the most relevant data source "
+            "for a given user question from a predefined list. "
+            "You must select one of the following data source IDs: {data_source_ids}. "
+            "Think step-by-step before making your final selection."
+        )),
+        ("human", "User question: {question}"),
+        ("human", "Based on the user's question, which data source should I use? Provide the ID and your reasoning.")
+    ]
+)
+
+# 5. Build the data source selection chain
+# The chain takes the user's question, formats it into the prompt, and sends it to the LLM.
+# The LLM's output will be a DataSourceChoice object.
+data_source_selection_chain = prompt_template | llm
+
+# 6. Function to retrieve content based on LLM's choice
+def get_selected_data_content(selection_output: DataSourceChoice, all_data_sources: Dict[str, Any]) -> Dict[str, Any]:
+    """Retrieves the content of the chosen data source."""
+    chosen_id = selection_output.chosen_id
+    if chosen_id in all_data_sources:
+        print(f"\nLLM chose data source ID: {chosen_id}")
+        print(f"LLM Reasoning: {selection_output.reasoning}")
+        return all_data_sources[chosen_id]
+    else:
+        print(f"\nError: LLM chose an invalid data source ID: {chosen_id}")
+        return {"name": "Invalid Source", "content": "No content found for this ID."}
+```
+
 ## Cloud Services
 
 ### Azure
@@ -657,5 +804,10 @@ Vector Store (e.g., Faiss) + Data Sources
 
 - **BigQuery ML** for SQL-based ML workflows
 - **TensorBoard**, **Weights & Biases**, and **MLflow** integration
-- CI/CD with **Cloud Build**, **Cloud Functions**, **Artifact Registr**
+- CI/CD with **Cloud Build**, **Cloud Functions**, **Artifact Registry**
+
+## MLOps
+
+- Design and implement end-to-end ML system (CICD, Iac, reproducability, lifecycle management, monitoring)
+- Use Azure AI to design and deploy conversational AI using NLU
 
