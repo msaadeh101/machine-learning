@@ -76,7 +76,7 @@ After a model is deployed, MLOps focuses on ensuring its performance and stabili
 - **Retraining and Redeployment**: When monitoring indicates a decline in performance, the model needs to be retrained on new data. This triggers the entire MLOps pipeline from experimentation to deployment.
 
 
-## 1.2 Teams & Roles
+## 1.2 Team & Roles
 
 MLOps is inherently cross-disciplinary, it bridges the gap between different teams and stakeholders.
 
@@ -164,3 +164,80 @@ This is the *pinnacle* of MLOps maturity. The system is not only automated but a
     - **CI/CD**: Jenkins, Github Actions, Tekton, DVC (for versioning datasets).
     - **Serving and Deployment**: KFServing, Seldon Core, BentoML, Azure ML Endpoints.
     - **Alerting and Incidents**: Grafana Alerting, Opsgenie, CloudWatch.
+
+## 2.1 Compute & Storage
+
+Idenfifying the proper compute and storage solutions is fundamental to an MLOps platform's performance and cost effectiveness. The requirements for ML workloads differ significantly from traditional approaches, especially relating to data volume and computational intensity. The main purpose is to provide scalable, reliable resources for training, serving and storing ML workloads and data.
+
+**Compute**:
+- **CPUs**: The standard for data preprocessing, ETL (Extract, Transform, Load) and serving simple models. Versatile and cost-effective for general-purpose tasks.
+- **GPUs**: Essential for *deep learning* and other types of parallilizable workloads. GPUs accelerate *matrix multiplication* and other operations for training large models, thus drastically reducing training time. Cloud providers offer GPU optimized instances (think `NVIDIA`).
+- **TPUs**: Tensor Processing Units are Google's custom-built ASICs (Application-Specific Integrated Circuits) designed specifically for machine learning, especially for training large-scale models. High performant, but less flexible than GPUs.
+
+- **Best Practices**:
+    - Use autoscaling clusters for unpredictable workloads.
+    - Leverage Spot instances for non-critical training jobs!
+
+**Storage**:
+- **Object Storage**: Cloud services (S3, GCS, Blob) are the standard for storing raw and processed data. They are highly scalable, durable and cost-effective. Ideal for massive datasets used in ML.
+- **Network File Systems (NFS)**: Used for shared storage that can be mounted on multiple instances, often for faster access to data during training, or for sharing model artifacts within a cluster.
+- **Data WareHouses / Lakes**: Essential for managing large, structured, and unstructured datasets. A data lake stores raw data in its native format, while a data warehouse stores structured, processed data for analytics/reporting. A **feature store** is a specialized data store that serves pre-computed features to both training and serving pipelines, ensuring consistency.
+
+- **Best Practices**:
+    - Always separate Raw, Curated and Production-ready datasets (Medallion architecture)
+    - Raw Data: Object storage like S3, GCS, Azure Blob, Data Lakes.
+    - Feature Storage: Feature stores like Feast, Tecton, Vertex AI Store.
+    - Model Storage: Model registries like MLflow, Vertex AI, SafeMaker, Azure ML.
+    - Artifact Storage: Versioned storage using DVC, Git, MLFlow artifacts.
+    - Logging/Monitoring: Time-series DBs (Prometheus, InfluxDB, ElasticSearch)
+
+**On-Prem Considerations**:
+    - Hardware procurement times
+    - GPU Clusters for training workloads.
+    - Network bandwidth for data transfers.
+    - Compliance Requirements (GDPR, HIPAA, SOC2)
+
+## 2.2 Containers & Orchestration
+
+*Containers* and *orchestration* tools are the backbone of modern, scalable MLOps infrastructure. They provide a reproducible and portable environment for running ML workflows.
+
+**Containers**: A container packages an application and all its dependencies (code, runtime, libraries) into a single, isolated unit (e.g Docker). Using containers for ML pipelines solves the *"it works on my machine"* problem by ensuring that the exact same environment used for development is used for production. This is critical for reproducibility, as ML models are sensitive to library versions and environment configurations.
+
+- **Best Practices for Containers**:
+    - Use lightweight base images (e.g. `python:slim`)
+    - Pin dependency versions.
+    - Include custom CA certs, GPU drivers and runtime libs wherever necessary.
+    - **ALWAYS** scan your images for vulnerabilities.
+
+
+
+**Orchestration**: Orchestration tools manage the lifecycle of containers at scale.
+- **Kubernetes (K8s)**: The industry standard for container orchestration. Kubernetes automates the deployment, scaling, and management of containerized applications. For MLOps, it's used to manage compute clusters for model training and to run model-serving microservices.
+
+- **Kubeflow**: An open-source project *built on Kubernetes clusters*, specifically designed to make ML pipelines portable and scalable. It provides a platform for running Jupyter notebooks, training models, and deploying them to production. Installed using Kustomize, Helm, or Manifests from Github.
+
+- **Best Practices for Orchestration**:
+    - If using the same cluster, isolate environments with namespaces.
+    - ALWAYS define resource requests and limits for pods.
+    - Apply autoscaling preferences: HPA/VPA for inference, and the cluster autoscaler for training.
+    - Treat the infrastructure as code (Terraform, OpenTofu, Helm, Kustomize)
+
+## 2.3 Security
+
+*Security* in MLOps is a multi-layered concern that extends beyond traditional application security to include data, models, and the ML platform itself. All aspects of security must be considered, including using service accounts for automation, Vnet isolation, encryption and more.
+
+**Data Security**: Protecting sensitive data. Mask or anonymize sensitive features, monitor for *data exfiltration*.
+- **Encryption**: Data should be encrypted both in transit (TLS) and at rest (e.g. encrypted storage buckets). Keys can be customer managed or cloud managed. Use database encryption (TDE, field-level encryption). Use T-SQL to control Row and Column level security.
+- **Access Control**: Use Role-Based Access Control (**RBAC**) to restrict who can access, modify or delete a dataset or model. This prevents unauthorized access to sensitive information.
+
+
+**Model Security**: The models themselves must be secured. Control access and protect the endpoints with API rate limiting, model encryption and obfuscation. 
+- **Model Tampering**: Ensure the integrity of models from training to deployment to prevent malicious actors from injecting backdoors. Use digital signatures or hash checks to verify model artifacts. Use model *watermarking* and *logging* to detect misuse.
+- **Adversarial Attacks**: Subtle changes to input data can cause the model to make incorrect predictions. MLOps security involves monitoring and mitigating these attacks (e.g. evasion, poisoning).
+
+**Infrastructure Security**: The MLOps pipeline itself, including the surrounding infrastructure, must be secured.
+- **Network Security**: Secure VPC/Virtual Networks using a Firewall. Consider *private endpoints* for sensitive services to prevent exposure to the internet. Utilize network policies in Kubernetes.
+- **Secrets Management**: Use Hashicorp Vault or cloud Key Vault service to store secrets including API keys, credentials and other sensitive information. Github and other Enterprise git services can hold secrets securely for each repository. NEVER hardcode a secret. Rotate credentials regularly.
+- **Image Scanning**: Automatically scan a container image for vulnerabilities (Aqua, cloud-native scanners)
+- **Least Privelege**: Apply this principle to all services and users at every step of the process, to ensure everyone has only the permissions they need for the task.
+- **Audit and Compliance**: Centralized logging either in ELK, Splunk to observe the entire environment. Automate compliance checks with Cloud tools or others like OPA. Consider data retention policies and right to deletion compliance (GDPR). Keep up with regular penetration testing and up-to-date incident response procedures.
