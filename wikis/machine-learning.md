@@ -9,6 +9,7 @@
     - [MLflow](#mlflow)
     - [Cohere](#cohere)
     - [Pinecone](#pinecone)
+    - [FAISS](#faiss)
     - [DagsHub](#dagshub)
     - [Kubeflow](#kubeflow)
     - [Langchain](#langchain)
@@ -392,15 +393,73 @@ embedding = cohere.embed(text)
 
 ### Pinecone
 
-- **Pinecone** is a vector store, a managed database for storing and searching embeddings to work alongside your LLM applications like RAG.
+- **Pinecone** is a vector store, a managed database for storing and searching embeddings to work alongside your LLM applications like RAG. Pinecone handles infrastructure and scaling, as well as real-time updates.
+  - **Use Cases**:
+    - Retreival-Augmented Generation (RAG):
+    - Semantic Search: Enables search systems to understand the "meaning" behind a query rather than just matching keywords.
+    - Recommendation Systems: Embedding user preferences, past interactions, item features.
+    - Anomaly Detection: Finding outliers in data based on "normal" clustering of vectors.
+    - DeDuplication:
+    - Image/Audio Search: Based on visual or auditory similarity vs. metadata or tags.
 
-- Open source vector databases: `chromadb`, `qdrant`: More user friendly, `faiss`: more complicated.
+- Open source vector databases: 
+  - `chromadb`: Developer friendly, especially made for RAG applications. Good for prototyping or smaller scale apps.
+  - `qdrant`: More user friendly
+  - `faiss`: Facebook AI Similarity Search. Open-source library for similarity serach and clustering of dense vectors. More complicated, custom ML Pipelines. 
 
 - Example Flow:
 1. Store documents -> Pinecone (as embeddings)
 1. User asks question -> Search Pinecone for relevant docs
 1. Retrieved docs -> question -> Send to LLM
 1. LLM generates answer using context
+
+#### Pinecone Strategies
+
+- Your index determines how vectors are stored and searched. You choose the metric, pod type, and index type based on the use case.
+
+- **Metrics**:
+  - `Cosine`: Best for text embeddings, measures angle between vectors (semantic similarity)
+  - `Dot Product`: Unnormalized, similar to cosine. Recommendation engine friendly.
+  - `Euclidean (L2)`: Straight line distence, numerical feature vectors or image embeddings.
+
+- **Index Types**:
+  - `Pod-Based (exact search)`: Stores vectors in memory, provides **exact nearest neighbor search**.
+    - `Pod Types`: S1 (Standard), P1 (Performance - mid), P2 (Performance - high).
+  - `Serverless (approx. search)`: Approximate nearest neighbors (ANN) under the hood for faster, cheaper queries at scale. Slight accuracy tradeoff
+
+
+### FAISS
+
+FAISS supports **Exact Search** and **Approximate Nearest Neighbor (ANN)** methods to balance speed, recall, and memory usage.
+
+#### Exact Search (Brute Force)
+- **IndexFlatL2 / IndexFlatIP**  
+  - Compares the query vector to all vectors (L2 = Euclidean, IP = inner product).  
+  - **Best for:** Small/medium datasets, 100% recall, benchmarking, no memory concerns.  
+  - **Trade-off:** Slow and memory-heavy for large datasets.
+
+#### Approximate Nearest Neighbor (ANN)
+
+- **IVF (IndexIVFFlat)**
+  - Partitions vectors into clusters (nlist), searches within nearest clusters (nprobe).  
+  - **Best for:** Large datasets, faster search with acceptable recall trade-off.  
+  - **Trade-off:** Recall depends on nprobe; requires training on sample data.
+
+- **PQ (IndexPQ)** 
+  - Compresses vectors into sub-vectors, quantized independently.  
+  - **Best for:** Very large datasets where memory efficiency is critical.  
+  - **Trade-off:** Lossy compression reduces recall.
+
+- **IVFPQ (IndexIVFPQ)**  
+  - Combines IVF clustering with PQ compression of residuals.  
+  - **Best for:** Massive datasets where speed and memory efficiency are both needed.  
+  - **Trade-off:** More complex to train/configure, but offers strong performance.
+
+- **HNSW (IndexHNSWFlat / IndexHNSWPQ)**  
+- Builds a **hierarchical** graph for fast nearest neighbor search.  
+- **Best for:** High recall, low latency, datasets from millions to hundreds of millions.  
+- **Trade-off:** Higher memory use than IVF; slower index build time but faster queries.
+
 
 ### Dagshub
 
