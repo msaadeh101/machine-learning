@@ -241,3 +241,74 @@ Idenfifying the proper compute and storage solutions is fundamental to an MLOps 
 - **Image Scanning**: Automatically scan a container image for vulnerabilities (Aqua, cloud-native scanners)
 - **Least Privelege**: Apply this principle to all services and users at every step of the process, to ensure everyone has only the permissions they need for the task.
 - **Audit and Compliance**: Centralized logging either in ELK, Splunk to observe the entire environment. Automate compliance checks with Cloud tools or others like OPA. Consider data retention policies and right to deletion compliance (GDPR). Keep up with regular penetration testing and up-to-date incident response procedures.
+
+
+## 3.1 Version Control Strategy
+
+In MLOps, *version control* goes beyond the code to include the data and the models, which are often large binary files. This is essential for collaboration, reproducability, auditing, and rolling back to previous versions if issues arise.
+
+**Sample Repository Structure**:
+
+```txt
+ml-project/
+├── src/                    # Source code
+│   ├── data/              # Data processing
+│   ├── features/          # Feature engineering
+│   ├── models/            # Model training code
+│   └── serving/           # Model serving code
+├── notebooks/             # Jupyter notebooks
+├── tests/                 # Unit and integration tests
+├── configs/               # Configuration files
+├── dockerfiles/           # Container definitions
+├── .dvcignore             # DVC ignore patterns
+├── dvc.yaml               # DVC pipeline definition
+└── requirements.txt       # Dependencies
+```
+
+**Code Versioning**:
+- Use Git as the foundation for all ML code (Notebooks, scripts, configs, pipeline definitions).
+- Adopt *branching strategies* (**GitFlow**, trunk-based) aligned with your team's CI/CD practices.
+- Store pipeline definitions alongside application code (EVERYTHING should be code!).
+
+**Data Versioning**:
+- Datasets change over time, and a model trained on one version of data will produce different results from one trained on another. We need to track these changes. Two popular options are:
+1. **Git LFS (Large File Storage)**: An extension for Git that handles klarge files by storing pointers in the repository.
+1. **Data Version Control (DVC)**: **DVC** is specifically built for MLOps. It works alongside Git to version large datasets and ML models. It creates a `.dvc` file that points to the actual data in remote locations. In addition, DVC allows for data stages integrated with python scripts to manipulate data.
+- Establish policies for *Raw data* (immutable), *Curated Data* (versioned and auditable), *Production-ready* (stable contracts/schema). 
+
+- Use `.dvcignore` to exclude temporary files.
+
+**Model Versioning**:
+- The *trained model* is the most important artifact of an ML pipeline. Model *binries* are stored as pickle, joblib, or ONNX types for example. Each time a model is trained, it should be treated as a new version. Version metadata includes: Code commit hash, data version, training environment, and hyperparameters and metrics.
+- **MD5/SSHA Hashes**: basic way to track models by using the hash of the file.
+- **Model Registry**: Think of a model registry like a docker container registry. More info in 3.3. For exmample, DVC Studio model registy is enabled on top of Git.
+
+- Model Version naming convention: 
+`model-name-v{major}.{minor}.{patch}-{experiment-id}-fraud-detection-v2.1.0-exp-4a3f2b1`
+
+
+## 3.2 Data Pipelines
+
+Data pipelines automate data ingestion, transformation, validation, and delivery to training and inference systems. A reliable and automated data pipeline ensures the model always has access to fresh, clean, and validated data. Consider *batch* (`Spark`, `Flink`, `Beam`) vs *stream* (`Kafka`, `Spark Streaming`, `Flink`) processing patterns.
+
+**General Pipeline Stages**:
+1. **Ingestion**: This is the process of collecting and loading raw data from various sources (databases, APIs, streaming) into a data lake. Be minful of data types, structured vs unstructured data, etc.
+1. **Validation**: Before data is used for training, it must be validated. Checking for schema changes, missing values, outliers. Any unexpected changes in data can break the pipeline. Vaslidation tools like Great Expectations, Deequ, and TFX Data Validation can be useful.
+1. **Transformation and Feature Engineering**: This stage involves cleaning the data, handling missing values, and transforming raw data into features suitable for model training. This includes aggregations, encoding, scaling (StandardScaler, MinMaxScaler, RobustScaler) and temporal features.
+1. **Orchestration**: DVC pipelines are lightweight and integrate easily into existing workflows. Tools like Apache Airflow, Prefect or Dagster can be used to orchestrate Data pipelines as well. They define a sequence of tasks (DAGS - Directed Acyclic Graphs) that run automatically with clear scheduling, monitoring and error handling capabilities.
+
+- Use *DVC Pipelines* for lightweight reproducable ML workflows, or use *Airflow* or *Kubeflow* when you need more robust pipelines.
+
+- Pipeline monitoring should be in place to check for data freshness, and monitor pipeline health (CPU, Memory, I/O metrics).
+
+## 3.3 Model Registry
+
+The *Model Registry* is a centralized, version-controlled repo for managing the lifecycle of trained ML models. It is a critical component for promoting collaboration, reproducibility, and governance.
+
+- **Centralized Storage**: A Model Registry provides a single source of truth for all models in an organization. This prevents model proliferation and confusion, where different teams might be using different versions of the same model.
+
+- **Version and Stage Management**: It tracks the version history of each model, from experimentation to production. Models can be assigned different stages (e.g., `Staging`, `Production`, `Archived`), providing a clear state for each model and controlling its readiness for deployment. This is crucial for managing the model release process.
+
+- **Metadata and Provenance**: A robust registry stores crucial metadata about each model version, including the training data used, the hyperparameters, the code commit hash, and the performance metrics. This *provenance data* is invaluable for auditing, debugging, and reproducing results.
+
+**Deployment Integration**: The Model Registry integrates directly with the CI/CD pipeline. When a new model version is approved for production, the pipeline can automatically retrieve it from the registry and deploy it to the serving environment. Define a **model promotion workflow** that can validate models and promote from the registry, including *A/B testing* integration patterns.
