@@ -1,52 +1,53 @@
 # MLOps Playbook
 
-## Table of Contents
+### Table of Contents
 
-### 1. Foundation
+#### 1. Foundation
 - [1.1 MLOps Overview](#11-mlops-overview)
 - [1.2 Team & Roles](#12-team--roles)
 - [1.3 Maturity Assessment](#13-maturity-assessment)
 
-### 2. Infrastructure
+#### 2. Infrastructure
 - [2.1 Compute & Storage](#21-compute--storage)
 - [2.2 Containers & Orchestration](#22-containers--orchestration)
 - [2.3 Security](#23-security)
 
-### 3. Data & Model Management
+#### 3. Data & Model Management
 - [3.1 Version Control Strategy](#31-version-control-strategy)
 - [3.2 Data Pipelines](#32-data-pipelines)
 - [3.3 Model Registry](#33-model-registry)
 
-### 4. ML Pipelines
+#### 4. ML Pipelines
 - [4.1 Training Automation](#41-training-automation)
 - [4.2 Model Validation](#42-model-validation)
 - [4.3 Deployment Strategies](#43-deployment-strategies)
 
-### 5. Testing & Quality
+#### 5. Testing & Quality
 - [5.1 Testing Framework](#51-testing-framework)
 - [5.2 Data Quality](#52-data-quality)
 - [5.3 Performance Testing](#53-performance-testing)
 
-### 6. Operations
+#### 6. Operations
 - [6.1 Monitoring & Alerting](#61-monitoring--alerting)
 - [6.2 CI/CD Automation](#62-cicd-automation)
 - [6.3 Incident Response](#63-incident-response)
 
-### 7. Tools & Practices
+#### 7. Tools & Practices
 - [7.1 Technology Stack](#71-technology-stack)
 - [7.2 Best Practices](#72-best-practices)
 - [7.3 Case Studies](#73-case-studies)
 
-### Appendices
+#### Appendices
 - [A. Tool Comparison](#a-tool-comparison)
 - [B. Templates & Examples](#b-templates--examples)
 
+## Foundation
 
-## 1.1 MLOps Overview
+### 1.1 MLOps Overview
 
 - The MLOps Lifecycle is a continuous loop that can be broken down into several key stages. It is an iterative cycle of experimentation, deployment and improvement.
 
-### Experimentation and Development
+#### Experimentation and Development
 
 - This is the initial phase where data scientists and ML engineers explore data, train models, and experiment with different algorithms. The focus is rapid iteration and tracking experiments.
 
@@ -55,7 +56,7 @@
 - **Model Training and Evaluation**: Building and training various models, then evaluating performance based on metrics like accuracy, precision, and recall. Includes cross-validation and train/validation/test splits.
 - **Experiment Tracking**: Logging parameters (data based), hyperparameters (model based), metrics, artifacts (models, datasets), and environment details (libraries, runtime) for each experiment, ensuring reproducability and a clear history.
 
-### CICD for ML
+#### CICD for ML
 
 - Once a model is ready for deployment, the CI/CD pipeline automates the process of getting it into production.
 
@@ -65,7 +66,7 @@
 **CD for ML**:
 - This stage automates deployment of trained model to production (dev, stage, etc) as a web service, batch processing job or to an edge device.
 
-### Operations and Monitoring
+#### Operations and Monitoring
 
 After a model is deployed, MLOps focuses on ensuring its performance and stability over time.
 
@@ -76,7 +77,7 @@ After a model is deployed, MLOps focuses on ensuring its performance and stabili
 - **Retraining and Redeployment**: When monitoring indicates a decline in performance, the model needs to be retrained on new data. This triggers the entire MLOps pipeline from experimentation to deployment.
 
 
-## 1.2 Team & Roles
+### 1.2 Team & Roles
 
 MLOps is inherently cross-disciplinary, it bridges the gap between different teams and stakeholders.
 
@@ -112,9 +113,9 @@ MLOps is inherently cross-disciplinary, it bridges the gap between different tea
 | **Business Alignment & Success Metrics** | C (consulted)      | C (consulted)                   | I (informed)                    | I (informed)                    | A (accountable) R (responsible) |
 
 
-## 1.3 Maturity Assessment
+### 1.3 Maturity Assessment
 
-### Level 0: Manual Process (No MLOps)
+#### Level 0: Manual Process (No MLOps)
 
 This is the starting point for most orgs. ML models are developed and deployed in an ad-hoc, manual fashion.
 
@@ -123,7 +124,7 @@ This is the starting point for most orgs. ML models are developed and deployed i
 - **Pain Points**: Lack of reproducibility, no version control for data or models, no monitoring, and significant delays in deploying and updating models. This approach is brittle and not scalable.
 
 
-### Level 1: ML Pipeline Automation
+#### Level 1: ML Pipeline Automation
 
 At this level, some parts of the ML pipeline are automated. The focus is on automating the model training and deployment process with a *repeatable pipeline*.
 
@@ -131,7 +132,7 @@ At this level, some parts of the ML pipeline are automated. The focus is on auto
 
 - **Key Enablers**: Use of a centralized ML platform (e.g., `Kubeflow`, `MLflow`) and version control for model code and data. This level reduces manual errors and improves deployment speed.
 
-### Level 2: CI/CD
+#### Level 2: CI/CD
 
 This level extends the existing CI/CD to the entire ML Lifecycle. It's about creating a fully integrated, automated system that responds to changes in code, data or environment.
 
@@ -139,7 +140,7 @@ This level extends the existing CI/CD to the entire ML Lifecycle. It's about cre
 
 - **Key Enablers**: Robust data and model validation tests, automated monitoring for data and concept drift, and integrated CI/CD tools. This level ensures a high degree of reliability and reproducibility.
 
-### Level 3: Automated and Monitored Pipelines
+#### Level 3: Automated and Monitored Pipelines
 
 This level focuses on the operational aspects of MLOps. The pipeline is not only automated, but now continuously monitored for performance and triggered for retraining. 
 
@@ -149,7 +150,7 @@ This level focuses on the operational aspects of MLOps. The pipeline is not only
 - **Key Enablers**: Advanced monitoring dashboards, alerting systems, and automated retraining triggers. This level reduces the need for constant human intervention and ensures models stay relevant over time.
 
 
-### Level 4: Self-Healing and Governance
+#### Level 4: Self-Healing and Governance
 
 This is the *pinnacle* of MLOps maturity. The system is not only automated but also *self-correcting* and fully integrated with robust governance and security practices.
 
@@ -165,7 +166,10 @@ This is the *pinnacle* of MLOps maturity. The system is not only automated but a
     - **Serving and Deployment**: KFServing, Seldon Core, BentoML, Azure ML Endpoints.
     - **Alerting and Incidents**: Grafana Alerting, Opsgenie, CloudWatch.
 
-## 2.1 Compute & Storage
+
+## Infrastructure
+
+### 2.1 Compute & Storage
 
 Idenfifying the proper compute and storage solutions is fundamental to an MLOps platform's performance and cost effectiveness. The requirements for ML workloads differ significantly from traditional approaches, especially relating to data volume and computational intensity. The main purpose is to provide scalable, reliable resources for training, serving and storing ML workloads and data.
 
@@ -197,7 +201,7 @@ Idenfifying the proper compute and storage solutions is fundamental to an MLOps 
     - Network bandwidth for data transfers.
     - Compliance Requirements (GDPR, HIPAA, SOC2)
 
-## 2.2 Containers & Orchestration
+### 2.2 Containers & Orchestration
 
 *Containers* and *orchestration* tools are the backbone of modern, scalable MLOps infrastructure. They provide a reproducible and portable environment for running ML workflows.
 
@@ -222,7 +226,7 @@ Idenfifying the proper compute and storage solutions is fundamental to an MLOps 
     - Apply autoscaling preferences: HPA/VPA for inference, and the cluster autoscaler for training.
     - Treat the infrastructure as code (Terraform, OpenTofu, Helm, Kustomize)
 
-## 2.3 Security
+### 2.3 Security
 
 *Security* in MLOps is a multi-layered concern that extends beyond traditional application security to include data, models, and the ML platform itself. All aspects of security must be considered, including using service accounts for automation, Vnet isolation, encryption and more.
 
@@ -242,8 +246,9 @@ Idenfifying the proper compute and storage solutions is fundamental to an MLOps 
 - **Least Privelege**: Apply this principle to all services and users at every step of the process, to ensure everyone has only the permissions they need for the task.
 - **Audit and Compliance**: Centralized logging either in ELK, Splunk to observe the entire environment. Automate compliance checks with Cloud tools or others like OPA. Consider data retention policies and right to deletion compliance (GDPR). Keep up with regular penetration testing and up-to-date incident response procedures.
 
+## Data and Model Management
 
-## 3.1 Version Control Strategy
+### 3.1 Version Control Strategy
 
 In MLOps, *version control* goes beyond the code to include the data and the models, which are often large binary files. This is essential for collaboration, reproducability, auditing, and rolling back to previous versions if issues arise.
 
@@ -287,7 +292,7 @@ ml-project/
 `model-name-v{major}.{minor}.{patch}-{experiment-id}-fraud-detection-v2.1.0-exp-4a3f2b1`
 
 
-## 3.2 Data Pipelines
+### 3.2 Data Pipelines
 
 Data pipelines automate data ingestion, transformation, validation, and delivery to training and inference systems. A reliable and automated data pipeline ensures the model always has access to fresh, clean, and validated data. Consider *batch* (`Spark`, `Flink`, `Beam`) vs *stream* (`Kafka`, `Spark Streaming`, `Flink`) processing patterns.
 
@@ -312,3 +317,299 @@ The *Model Registry* is a centralized, version-controlled repo for managing the 
 - **Metadata and Provenance**: A robust registry stores crucial metadata about each model version, including the training data used, the hyperparameters, the code commit hash, and the performance metrics. This *provenance data* is invaluable for auditing, debugging, and reproducing results.
 
 **Deployment Integration**: The Model Registry integrates directly with the CI/CD pipeline. When a new model version is approved for production, the pipeline can automatically retrieve it from the registry and deploy it to the serving environment. Define a **model promotion workflow** that can validate models and promote from the registry, including *A/B testing* integration patterns.
+
+## ML Pipelines
+*Machine learning pipelines* enable the seamless flow of data, code, and models from experimentation to production. A well-designed pipeline ensures reproducibility, scalability, and reliability of the ML lifecycle.
+
+### 4.1 Training Automation
+
+*Training automation* refers to the process of using scripts and tools to automatically retrain an ML model. This is crucial for keeping models current and relevant as new data becomes available. An automated system can periodically pull fresh data, preprocess it, and kick off a new training run. This is often triggered by a schedule (daily or weekly) upon a new data arrival, or a decline in model performance. The automated process logs all parameters, artifacts, and metrics, ensuring reproducibility and a clear history of all model versions.
+
+**Key Practices**:
+- **Scheduled Training**: Automate retraining jobs with orchestration tools (e.g., `Airflow`, `Kubeflow`, `MLflow`, `Azure ML Pipelines`).
+- **Event-driven Triggers**: Initiate training when new data arrives or when data drift is detected.
+- **Reproducability**: Store training code, hyperparameters, and environment configuration in version control.
+- **Scalability**: Use distributed training on GPUs/TPUs for large datasets.
+- **CI/CD Integration**: Treat ML code like application code by running unit tests, linting, and automated builds before training (Github Actions, Azure DevOps, etc.).
+
+**Metrics to Track:**  
+- `Accuracy`: The proportion of all predictions that were correct, providing an overall effectiveness measure of the model.
+- `precision`: The proportion of *true positive* predictions among all positive predictions, reflecting how many selected items were relevant.
+- `recall`: The proportion of true positive predictions among all actual positives, indicating how well the model identifies relevant cases.
+- `F1-score`: The harmonic mean of precision and recall, balancing both metrics into a single indicator of a model's effectiveness.
+- `ROC AUC`: The *area under the receiver operating characteristic curve*, summarizing the model's ability to distinguish between classes at various threshold settings.
+- `latency`: The time delay between input and output, measuring how quickly a system produces results.
+- `memory footprint`: The total amount of RAM or storage required by a model or system during operation.
+- `fairness metrics`: Quantitative measures that assess whether a model's outcomes are unbiased across different demographic or protected groups.
+
+
+
+### 4.2 Model Validation
+
+
+### 4.3 Deployment Strategies
+
+
+## Tools & Practices
+
+
+### 7.1 Technology Stack
+
+### Pipeline Orchestration
+
+#### Apache Airflow
+
+**Overview**: Airflow is a platform to programmatically author, schedule, and monitor workflows using *Directed Acyclic Graphs (DAGs)*
+
+**Key Features**:
+- Rich UI for workflow visualization and monitoring.
+- Extensive operator ecosystem for various systems (databases, cloud services, ML tools).
+- Dynamic pipeline generation with Python code.
+- Built-in retry logic and failure handling
+
+
+**ML Use Cases**: Data preprocessing pipelines, model training orchestration, batch inference scheduling
+- **Pros**: Mature ecosystem, strong community, flexible scheduling, great for hybrid ML/data workflows.
+- **Cons**: Steep learning curve, can be complex to set up, not specifically meanht for ML.
+
+#### Kubeflow Pipelines
+
+**Overview**: Kubernetes-native platform for building and deploying portable, scalable ML workflows.
+
+**Key Features**:
+- Container-based pipeline components for reproducibility.
+- Visual pipeline designer and experiment tracking.
+- Built-in support for *hyperparameter* tuning and distributed training.
+- Integration with Kubernetes for auto-scaling and resource management.
+
+
+**ML Use Cases**: End-to-end ML workflows, distributed training, hyperparameter optimization, *model serving*.
+- **Pros**: Cloud-native, excellent scalability, strong ML focus, reproducible environments.
+- **Cons**: Kubernetes complexity, steeper learning curve, requires container knowledge
+
+#### MLflow
+
+**Overview**: Open-source platform from Databricks that manages the complete ML lifecycle including experimentation, reproducibility, deployment, and model registry.
+
+**Key Features**:
+- Experiment tracking with metrics, parameters, and artifacts.
+- Model packaging and deployment across various platforms.
+- Model registry for versioning and stage management.
+- Support for multiple ML libraries (`scikit-learn`, `TensorFlow`, `PyTorch`, etc.).
+
+
+**ML Use Cases**: Experiment management, model versioning, deployment automation, team collaboration.
+- **Pros**: Language/library agnostic, simple setup, comprehensive ML lifecycle coverage.
+- **Cons**: Limited workflow orchestration compared to dedicated pipeline tools, only basic scheduling capabilities.
+
+#### Metaflow
+
+**Overview**: Framework that makes it easy to build and manage real-life data science projects, with a focus on *human-centric* ML workflows.
+
+**Key Features**:
+- Python-native with decorators for scaling and cloud integration.
+- Built-in versioning for code, data, and results.
+- Seamless local-to-cloud transition.
+- Integration with *AWS* services (S3, Batch, Step Functions).
+
+
+**ML Use Cases**: Rapid prototyping, production ML workflows, data science experimentation.
+- **Pros**: Developer-friendly, minimal infrastructure complexity, excellent for AWS environments.
+- **Cons**: Primarily AWS-focused, smaller community compared to other tools, limited multi-cloud support.
+
+#### TensorFlow Extended (TFX)
+
+**Overview**: *Production-ready* ML platform built around `TensorFlow`, providing components and orchestration for scalable ML pipelines.
+
+**Key Features**:
+- Pre-built components for data validation, transformation, training, and serving.
+- TensorFlow Data Validation (`TFDV`) for data analysis and validation.
+- TensorFlow Transform (`TFT`) for feature engineering.
+- TensorFlow Serving for model deployment.
+
+
+**ML Use Cases**: Large-scale TensorFlow model pipelines, production ML systems, data validation workflows.
+- **Pros**: Production-proven, comprehensive ML pipeline components, tight TensorFlow integration.
+- **Cons**: TensorFlow-centric, complex setup, steep learning curve for non-Google environments
+
+#### Amazon SageMaker Pipelines
+
+**Overview**: AWS's fully managed service for building ML workflows that integrates with the broader SageMaker ecosystem.
+
+**Key Features**:
+- Native integration with SageMaker services (training, processing, endpoints).
+- Visual workflow designer and step-by-step execution tracking.
+- Built-in support for model approval workflows and A/B testing.
+- Automatic provisioning of compute resources.
+
+
+**ML Use Cases**: AWS-native ML workflows, automated model deployment, compliance-heavy environments.
+- **Pros**: Fully managed, tight AWS integration, no infrastructure management, compliance features.
+- **Cons**: AWS vendor lock-in, can be expensive, limited customization compared to open-source tools.
+
+#### Azure Machine Learning Pipelines
+
+**Overview**: Microsoft's cloud-native ML pipeline service integrated with Azure ML workspace and broader Azure ecosystem.
+
+**Key Features**:
+- Drag-and-drop pipeline designer with code-first options.
+- Built-in modules for common ML tasks and Azure service integration.
+- Automated ML (AutoML) pipeline components.
+- Integration with Azure DevOps for CI/CD workflows.
+
+
+**ML Use Cases**: Azure-centric ML workflows, rapid prototyping with designer, enterprise ML solutions.
+- **Pros**: User-friendly designer interface, strong enterprise features, good Azure integration.
+- **Cons**: Azure ecosystem dependency, less flexibility than open-source alternatives, learning curve for advanced features.
+
+### Data Versioning and Management
+
+#### DVC (Data Version Control)
+
+**Overview**: Git-like version control system for ML projects, designed to handle large datasets and model files.
+
+**Key Features**:
+- Git integration for seamless workflow with existing repositories.
+- Remote storage support (S3, GCS, Azure Blob, SSH, etc.).
+- Pipeline definition and execution with dependency tracking.
+- Experiment comparison and metrics tracking.
+
+
+**ML Use Cases**: Dataset versioning, reproducible experiments, collaborative data science, pipeline automation.
+- **Pros**: Git-based workflow, language agnostic, lightweight, excellent for small to medium teams.
+- **Cons**: Limited scalability for very large datasets, basic UI compared to enterprise solutions.
+
+#### Pachyderm
+
+**Overview**: Data-centric pipeline platform that provides version control for data with containerized processing.
+
+**Key Features**:
+- Automatic data versioning and lineage tracking.
+- Containerized pipeline execution.
+- Incremental processing and deduplication.
+- Built-in data visualization and exploration.
+
+
+**ML Use Cases**: Large-scale data processing, automated retraining pipelines, data lineage tracking.
+- **Pros**: Handles large datasets efficiently, strong versioning capabilities, container-native.
+- **Cons**: Complex setup, requires Kubernetes, smaller community, steep learning curve.
+
+#### Delta Lake
+
+**Overview**: Open-source storage layer that brings *ACID transactions* to Apache Spark and big data workloads
+
+**Key Features**:
+- ACID transactions for data lakes.
+- *Time travel* and versioning capabilities.
+- Schema enforcement and evolution.
+- Unified batch and streaming data processing.
+
+
+**ML Use Cases**: Feature store backends, large-scale data preprocessing, real-time ML pipelines.
+- **Pros**: Production-grade reliability, excellent Spark integration, handles massive scale.
+- **Cons**: Spark-centric, complex for simple use cases, requires big data expertise.
+
+### Experiment Tracking
+
+#### Weights & Biases (wandb)
+
+**Overview**: Platform for experiment tracking, model management, and team collaboration in ML projects.
+
+**Key Features**:
+- Real-time experiment tracking with interactive visualizations.
+- Hyperparameter optimization and sweep management.
+- Model artifact storage and versioning.
+- Team collaboration and report generation.
+
+
+**ML Use Cases**: Deep learning experiments, hyperparameter tuning, model comparison, research collaboration.
+- **Pros**: Excellent visualizations, strong community, easy integration, great for research.
+- **Cons**: Can be expensive for large teams, cloud-dependent, limited on-prem options.
+
+#### Neptune (Neptune.ai)
+
+**Overview**: Metadata store for MLOps built for research and production teams that run a lot of experiments.
+
+**Key Features**:
+- Comprehensive metadata logging and organization.
+- Advanced experiment comparison and analysis.
+- Model registry with deployment tracking.
+- Integration with major ML frameworks and tools.
+
+
+**ML Use Cases**: Large-scale experimentation, model monitoring, team collaboration, audit trails.
+- **Pros**: Scalable architecture, excellent organization features, strong enterprise support.
+- **Cons**: Higher cost, complex setup for simple use cases, learning curve for advanced features.
+
+### Model Serving and Deployment
+
+#### Seldon Core
+
+**Overview**: Open-source platform for deploying ML models on Kubernetes with advanced features for production ML.
+
+**Key Features**:
+- Multi-framework model serving (`TensorFlow`, `PyTorch`, `scikit-learn`, etc.).
+- A/B testing and canary deployments.
+- Request/response logging and monitoring.
+- Custom inference pipelines and transformers.
+
+
+**ML Use Cases**: Production model serving, A/B testing, multi-model deployments, inference pipelines
+- **Pros**: Kubernetes-native, framework agnostic, advanced deployment patterns, open source.
+- **Cons**: Kubernetes complexity, requires container expertise, setup overhead.
+
+### Feature Stores
+
+#### Feast
+
+**Overview**: Open-source feature store originally developed by *Gojek*, designed to manage and serve ML features at scale.
+
+**Key Features**:
+- Online and offline feature serving.
+- Point-in-time correctness for training data.
+- Feature versioning and lineage.
+- Integration with major data sources and ML platforms.
+
+
+**ML Use Cases**: Feature management, real-time inference, training data generation, feature sharing.
+- **Pros**: Open source, cloud agnostic, strong community, comprehensive feature management.
+- **Cons**: Complex setup, requires significant infrastructure, learning curve.
+
+### Infrastructure and Compute
+
+#### Ray
+
+**Overview**: Distributed computing framework that simplifies scaling Python applications, including ML workloads.
+
+**Key Features**:
+- Distributed training and hyperparameter tuning.
+- Scalable data processing and model serving.
+- Built-in ML libraries (`Ray Tune`, `Ray Serve`, `Ray Train`).
+- Automatic resource management.
+
+
+**ML Use Cases**: Distributed training, hyperparameter optimization, large-scale inference, reinforcement learning.
+- **Pros**: Python-native, easy scaling, comprehensive ML toolkit, good performance.
+- **Cons**: Relatively new ecosystem, requires distributed computing knowledge, debugging complexity.
+
+### Monitoring and Observability
+
+#### Evidently
+
+**Overview**: Open-source tool for ML model monitoring, designed to analyze and track data and ML model quality.
+
+**Key Features**:
+- Data drift detection and analysis.
+- Model performance monitoring.
+- Interactive HTML reports and dashboards.
+- Integration with monitoring systems (`Grafana`, etc.).
+
+
+**ML Use Cases**: Model monitoring, data quality analysis, drift detection, performance tracking.
+- **Pros**: Open source, comprehensive monitoring, easy to integrate, good visualizations
+- **Cons**: Limited real-time capabilities, requires custom integration for alerts, basic UI
+
+### 7.2 Best Practices
+
+
+### 7.3 Case Studies
