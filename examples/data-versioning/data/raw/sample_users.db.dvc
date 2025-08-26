@@ -1,0 +1,5 @@
+outs:
+- md5: ff8cf34cca5319b064498ffb61c9d13a
+  size: 69632
+  hash: md5
+  path: sample_users.db

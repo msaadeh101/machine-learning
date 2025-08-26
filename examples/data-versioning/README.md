@@ -52,7 +52,7 @@ The production path sacrifices some of the strict versioning of the research pat
 
 ---
 
-## Example: Using DVC with Azure Data Lake (ADLS)
+## Using DVC with Azure Data Lake (ADLS)
 
 ```bash
 # Track a curated dataset snapshot
@@ -98,3 +98,140 @@ df = spark.read.parquet(data_path)
 - **Delta Lake / Hudi**: Use for scalable time-travel queries; DVC still useful for external snapshots and lightweight reproducibility.
 - **Orchestration (Airflow / Kubeflow / Prefect)**: Automate `dvc pull` in training pipelines to guarantee the right dataset version is always used.
 - **CI/CD**: Run `dvc pull` in CI workflows to test model training against a fixed dataset snapshot.
+
+## Example Instructions
+
+### Setup Instructions
+
+1. Initialize DVC
+
+```bash
+# Initialize DVC in your project
+dvc init
+# Add remote storage (example with S3)
+dvc remote add -d myremote s3://my-bucket/dvc-storage
+# Or use local storage for testing
+dvc remote add -d local /tmp/dvc-storage
+```
+
+2. Install Dependencies
+
+```bash
+pip install dvc[s3] pandas scikit-learn matplotlib seaborn
+```
+
+or if using Anaconda environments:
+
+```bash
+# Create environment from the file
+conda env create -f environment.yml
+conda activate dvc-example
+# Now continue in your Anaconda environment
+```
+
+### Data Pipeline Implementation 
+
+The `dvc.yaml` is the DVC pipeline configuration. It contains 3 stages which carry out the three `src/.py` scripts for each stage, each with dependencies, parameters, and outputs.
+
+The `params.yaml` contains the params for the pipeline, separated by stage.
+
+The `src/data_preprocessing.py` is a simple Python script that loads the parameters, loads the data, handles missing values, handles outliers, and saves the processed data.
+
+The `src/feature_engineering.py` loads the parameters from the `params.yaml`, loads the processed data, and creates the feature engineering pipeline. The engineered features are saved to the `data/features` folder as `engineered_features.csv`.
+
+The model training script is `src/train_model.py`, where the params are yet again loaded, the data is split, and the model is trained. The model and metrics are saved to their respective locations.
+
+### DVC Commands and Workflow
+
+1. Basic DVC Operations
+
+```bash
+# Add data to DVC tracking
+dvc add data/raw/dataset.csv
+
+# Commit DVC file to Git
+git add data/raw/dataset.csv.dvc .gitignore
+git commit -m "Add raw dataset to DVC tracking"
+
+# Push data to remote storage
+dvc push
+
+# Run the entire pipeline
+dvc repro
+
+# Show pipeline status
+dvc status
+
+# Compare experiments
+dvc metrics show
+dvc plots show
+```
+
+2. Experiment Management
+
+```bash
+# Create a new experiment branch
+git checkout -b experiment/new-features
+
+# Modify parameters
+# Edit params.yaml to change hyperparameters
+
+# Run experiment
+dvc repro
+
+# Compare with main branch
+dvc metrics diff main
+dvc plots diff main
+
+# If satisfied, merge to main
+git checkout main
+git merge experiment/new-features
+```
+
+3. Data version management
+
+```bash
+# Check data status
+dvc status
+
+# Pull latest data version
+dvc pull
+
+# Get specific data version
+git checkout <commit-hash>
+dvc checkout
+
+# List data versions
+git log --oneline data/raw/dataset.csv.dvc
+```
+
+### Notes and Summary
+
+**Benefits of This DVC Setup**
+
+- **Reproducibility**: Anyone can recreate exact results using dvc repro.
+- **Versioning**: Track different versions of data, models, and experiments.
+- **Collaboration**: Share large datasets without bloating Git repository.
+- **Parameter Management**: Easy experimentation with different configurations.
+- **Pipeline Automation**: Automatic dependency tracking and execution.
+- **Metrics Tracking**: Compare model performance across experiments.
+
+**Usage Examples**
+
+```bash
+# Initial setup
+dvc init
+dvc remote add -d storage s3://my-bucket/dvc-data
+
+# Add sample data and run pipeline
+dvc add data/raw/dataset.csv
+dvc repro
+
+# Experiment with different parameters
+# Edit params.yaml
+dvc repro  # Only runs changed stages
+
+# Compare experiments
+dvc metrics show
+dvc plots show confusion_matrix.json
+```
