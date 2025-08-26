@@ -125,6 +125,8 @@ or if using Anaconda environments:
 ```bash
 # Create environment from the file
 conda env create -f environment.yml
+conda activate dvc-example
+# Now continue in your Anaconda environment
 ```
 
 ### Data Pipeline Implementation 
