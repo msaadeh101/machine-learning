@@ -1,0 +1,76 @@
+# DVC and Version Control
+dvc[s3]==3.48.4
+gitpython==3.1.40
+
+# Data Processing and Analysis
+pandas==2.1.4
+numpy==1.24.4
+scipy==1.11.4
+
+# Machine Learning
+scikit-learn==1.3.2
+joblib==1.3.2
+
+# Database Support
+sqlite3  # Built into Python, but listed for clarity
+sqlalchemy==2.0.23
+pymongo==4.6.1  # If using MongoDB
+psycopg2-binary==2.9.9  # If using PostgreSQL
+
+# Configuration and Parameters
+pyyaml==6.0.1
+python-dotenv==1.0.0
+
+# Visualization and Plotting
+matplotlib==3.8.2
+seaborn==0.13.0
+plotly==5.17.0
+
+# Logging and Monitoring
+loguru==0.7.2
+
+# Data Validation
+great-expectations==0.18.8
+pandera==0.17.2
+
+# File Format Support
+openpyxl==3.1.2  # Excel files
+xlrd==2.0.1      # Old Excel format
+h5py==3.10.0     # HDF5 files
+pyarrow==14.0.2  # Parquet files
+
+# Utilities
+tqdm==4.66.1      # Progress bars
+pathlib2==2.3.7   # Enhanced path handling
+click==8.1.7      # CLI interfaces
+
+# Testing (optional but recommended)
+pytest==7.4.3
+pytest-cov==4.1.0
+
+# Development tools (optional)
+black==23.12.1    # Code formatting
+flake8==6.1.0     # Linting
+pre-commit==3.6.0 # Git hooks
+
+# Cloud Storage (choose based on your needs)
+# AWS S3
+boto3==1.34.34
+s3fs==2024.2.0
+
+# Google Cloud Storage
+# google-cloud-storage==2.10.0
+# gcsfs==2024.2.0
+
+# Azure Blob Storage
+# azure-storage-blob==12.19.0
+# adlfs==2024.2.0
+
+# Alternative: Minimal requirements for basic DVC functionality
+# Uncomment this section and comment above if you want minimal setup
+#
+# dvc==3.48.4
+# pandas==2.1.4
+# scikit-learn==1.3.2
+# pyyaml==6.0.1
+# matplotlib==3.8.2

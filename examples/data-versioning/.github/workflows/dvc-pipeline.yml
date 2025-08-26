@@ -1,0 +1,37 @@
+name: DVC Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+    
+    - name: Configure DVC
+      run: |
+        dvc remote modify myremote access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+        dvc remote modify myremote secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    
+    - name: Pull data
+      run: dvc pull
+    
+    - name: Run DVC pipeline
+      run: dvc repro
+    
+    - name: Push results
+      run: dvc push
