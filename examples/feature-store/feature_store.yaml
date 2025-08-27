@@ -1,0 +1,20 @@
+project: my_ml_project
+
+# Where Feast stores its metadata (schemas, feature definitions, etc.)
+registry: gs://my-feature-store/registry.db
+
+# Defines how to connect to your feature data sources
+provider: gcp
+
+# Offline store (historical training data)
+offline_store:
+  type: bigquery
+  dataset: my_feature_dataset   # BigQuery dataset where historical features live
+
+# Online store (real-time serving)
+online_store:
+  type: redis
+  connection_string: "redis://redis-prod.mycompany.com:6379"
+
+# Optional: logging feature requests (can help with training-serving skew)
+entity_key_serialization_version: 2
