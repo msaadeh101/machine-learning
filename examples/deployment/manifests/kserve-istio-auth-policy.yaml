@@ -1,0 +1,26 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata: # Restrict access to InferenceService to specific SA via Istio Auth policy
+  name: allow-from-ml-api
+  namespace: ml-prod
+spec:
+  selector:
+    matchLabels:
+      serving.kserve.io/inferenceservice: "cf-model-predictor"  # example selector
+  action: ALLOW
+  rules:
+  - from:
+    - source:
+        principals: ["cluster.local/ns/ml-api/sa/ml-api-sa"]
+
+---
+# Enforce strict mTLS using Istio PeerAuthentication
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: namespace-strict-mtls
+  namespace: ml-prod
+spec:
+  mtls:
+    mode: STRICT
+

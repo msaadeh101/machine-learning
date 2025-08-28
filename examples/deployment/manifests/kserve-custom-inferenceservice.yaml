@@ -1,0 +1,20 @@
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: custom-model
+  namespace: ml-prod
+spec:
+  predictor:
+    containers:
+      - image: ghcr.io/myorg/custom-model-server:latest
+        name: kserve-container
+        ports:
+          - containerPort: 8080
+        env:
+          - name: MODEL_PATH
+            value: "/mnt/models/latest"
+        resources:
+          limits:
+            cpu: "2"
+            memory: "4Gi"
+    serviceAccountName: kserve-model-sa

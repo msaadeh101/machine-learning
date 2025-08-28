@@ -1,0 +1,13 @@
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: sklearn-iris
+  namespace: ml-prod
+spec:
+  predictor:
+    sklearn:
+      storageUri: "s3://my-bucket/models/sklearn/iris/"
+      resources:
+        limits:
+          cpu: "0.5"
+          memory: "1Gi"

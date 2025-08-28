@@ -1,0 +1,14 @@
+apiVersion: "serving.kserve.io/v1beta1"
+kind: "InferenceService"
+metadata:
+  name: tf-iris
+  namespace: ml-prod
+spec:
+  predictor:
+    tensorflow:
+      storageUri: "gs://my-bucket/models/iris/tf"   # or s3://, pvc:// etc
+      resources:
+        limits:
+          cpu: "1"
+          memory: "2Gi"
+    canaryTrafficPercent: 10 # Canary support
