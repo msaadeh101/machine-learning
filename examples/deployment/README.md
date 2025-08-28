@@ -34,7 +34,7 @@
 
 ### KServe
 
-**KServe** is the dominant choice today for K8 native ML frameworks, part of Kubeflow and now the CNCF sandbox project. It provides model serving on Kubernetes with autoscaling, GPU/accelerator support, and canary rollouts.
+**KServe** is the dominant choice today for K8 native ML frameworks, part of Kubeflow and now the CNCF sandbox project. It provides model serving on Kubernetes with autoscaling, GPU/accelerator support, and canary rollouts. With KServe, you define one YAML (InferenceService) and KServe handles routing, scaling, optional transformers, secure access.
 - Supports many backends (TorchServe, TensorFlow Serving, ONNX Runtime, XGBoost, Skleran servers, and custom inference services via docker image)
 - Provides **Kubernetes Native CRDs** (`InferenceService`) to define model servers (predictor, transformer, explainer). 
 - Integreate with `Iter8` or `Argo` for automated metrics based promotions (A/B metrics based rollouts)
@@ -96,8 +96,59 @@ Use example manifests in `./manifests/`:
 6. Monitor latency and error metrics; if healthy, promote canary.
 7. Enforce `PeerAuthentication` and `AuthorizationPolicy` to restrict callers.
 
+## Seldon Core
+
+**Seldon Core** is another K8 native ML serving Framework, that is more flexible, yet more complex, than KServe. It's for those that want to serve models AND build inference pipelines.
+- Seldon emphasizes deploying single models or graphs/ensembles of models. Custom inference graphs: `(A -> B + C -> aggregator)`
+- Has built-in support for **A/B testing**, **multi-armed bandits**, **shadow deployments**.
+- Strong focus on explainability (`Alibi`), monitoring, drift detection.
+
+- The deployment CRD is `SeldonDeployment` is a graph of predictors, **routers** and transformers.
+- Support for full graph/ensemble support.
+
 ## Cloud Provider Ecosystem
 
 - Leverage Managed Kubernetes services to abstract much of the complexity away.
 
 - Leverage serverless compute options like Lambda, Cloud Functions, Azure Functions for cost-effective, infrequent, burstable inferences (integrate with API gateways).
+
+### AWS
+
+- **Amazon EKS** + **KServe/Seldon** for Kubernetes-native inference.
+- **EKS add-ons**: Cluster Autoscaler, AWS Load Balancer Controller, IRSA (IAM Roles for Service Accounts).
+**Model Storage**: Amazon S3 (artifact repository for model weights).
+**GPU/Inferentia**: P4/P5 instances (NVIDIA A100/H100) or AWS Inferentia/Trainium accelerators for cost-effective inference.
+**Alternative**: Amazon **SageMaker** (managed deployment) vs. EKS-based serving (DIY).
+
+
+**Example Pattern**: Train on SageMaker, export to S3, deploy via KServe on EKS.
+
+### GCP
+
+- **Google Kubernetes Engine** (GKE: with built-in GPU/TPU support.
+- **Vertex AI** for managed training + model registry.
+- **Artifact Registry/GCS** for container + model artifact storage.
+- **Service Mesh**: Anthos Service Mesh (Istio-based) for mTLS + policy.
+
+**Example Pattern**: Train using Vertex AI → export artifacts to GCS → deploy inference service on GKE with KServe.
+
+
+### Azure
+
+- **Azure Kubernetes Service** (AKS): with **Azure ML** or KServe integration.
+- **Azure Blob Storage/ADLS:** as model registry artifact store.
+- **AAD Pod Identity**: for secure access to storage/secrets.
+- **Networking**: Private Link + Private Endpoint + NSGs to restrict access.
+- **GPU Nodes**: `NC-series` (V100/A100) or `ND-series` (HGX) for deep learning inference.
+
+**Example Pattern**: Train in Azure ML workspace → register in Azure ML registry → deploy into AKS via KServe.
+
+## End-to-end Workflow (Example)
+
+1. **Model Training**: Train ResNet50 in PyTorch on a cloud GPU cluster.
+2. **Artifact Storage**: Push model.pt to S3 (versioned bucket).
+3. **Model Deployment**: Apply KServe InferenceService manifest in EKS.
+4. **Traffic Routing**: Gradually shift 10% → 100% traffic to new revision using KServe canary.
+5. **Security Layer**: Enforce Istio mTLS + RBAC for service access.
+6. **Monitoring**: Use Prometheus → Grafana dashboards for inference latency & error rates.
+7. **CI/CD**: GitOps pipeline (ArgoCD/Flux) to version-control manifests.
