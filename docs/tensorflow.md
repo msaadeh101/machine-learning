@@ -1,12 +1,13 @@
 # TensorFlow Guide
 
-This guide walks you from **zero knowledge of TensorFlow** to confidently building and training neural networks. Covers the foundations, build practical models, and explain concepts along the way.
+This guide walks you from **zero knowledge of TensorFlow** to confidently building and training neural networks.
 
 
 ## Table of Contents
 
 1. [What is TensorFlow?](#what-is-tensorflow)
 1. [What is a Tensor?](#what-is-a-tensor)
+1. [TensorFlow on Github](#tensorflow-on-github)
 1. [Installing TensorFlow](#installing-tensorflow)
 1. [Tensor Operations](#tensor-operations)
 1. [Building Your First Neural Network](#building-your-first-neural-network)
@@ -18,13 +19,22 @@ This guide walks you from **zero knowledge of TensorFlow** to confidently buildi
 
 ## What is TensorFlow?
 
-**TensorFlow** is an open-source library developed by Google for building and training machine learning models, especially neural networks. It provides tools for:
+**TensorFlow** is an open-source platform developed by Google designed to execute computations, particularly for ML with high performance. The [source code](https://github.com/tensorflow/tensorflow) is comprised of high-level Python APIs and low-level C++ runtime. The architecture is built around the concept of a **dataflow graph** - which defines the sequence of operations.
 
-- Creating computational graphs
-- Running operations on GPUs/TPUs
-- High-level APIs for fast model building (`tf.keras`) - based on the original Keras API for deep learning.
+When you write a *TensorFlow program*, you are defining a graph of mathematical operations. The core of the source code is dedicated to building, optimizing, and executing the graphs efficiently on various hardware (GPU/TPU acceleration).
+
+### Key Features
+
+- **Computational Graphs**: TensorFlow represents mathematical **operations as nodes** and **data as edges** in a graph, allowing for efficient execution across CPU, GPU, TPU.
+- **Ecosystem**: Includes high-level APIs (Keras), deployment tools (TF Serving, TF Lite, TF.js), and MLOps support (TFX).
+- **Cross Platform**: Runs across desktop, mobile, embedded systems, distributed clusters.
+
 
 ### Keras
+
+**Keras** was originally an independent library, but is fully integrated with TensorFlow (`tf.keras`). It abstracts TFs lower-level complexities by providing a modular, user-friendly interface to **define neural networks quickly**. When you use Keras, you are using TensorFlow as the backend engine.
+
+Keras focuses on usability and rapid protoyping with pre-built layers, loss functions, optimizers, and easy model-building constructs (TensorFlow manages computation and efficiency). **Keras is the developer-friendly front-end to the TF ecosystem**.
 
 Take this Model Architecture, we will apply both a functional API approach and a Sequential model approach with the same data (MNST)
 
@@ -88,7 +98,9 @@ model.summary()
 
 ## What is a Tensor?
 
-A **tensor** is the primary data structure. It is a multi-dimensional array similar to NumPy arrays but with extra capabilities (like GPU acceleration). 
+A **tensor** is the primary data structure. It is a **multi-dimensional array** similar to NumPy arrays but with extra capabilities (like GPU acceleration). 
+
+The `tf.Tensor` object in Python is a handle or a wrapper; the underlying Tensor is a C++ object defined in `tensorflow/core/framework/tensor.h` This C++ class handles the array's data, shape, and data type as well as device placement.
 
 - There are three core properties: 
     - `Rank (ndim)`: Number of dimensions the tensor has.
@@ -101,6 +113,10 @@ A **tensor** is the primary data structure. It is a multi-dimensional array simi
         - `(3, 2)` = a matrix with shape of 3x2.
     - `Data type (dtype)`
         - Can be `float32`, `int32`, `string`.
+    - `Device placement (device)`: Where a tensor is stored and computed.
+        - `CPU:0` -> default CPU device.
+        - `GPU:0`, `GPU:1` -> Specific GPUs.
+        - `TPU:0` -> Tensor Processing Unit (large scale training).
 
 
 | Tensor Rank | Example            | Shape        |  Description   |
@@ -108,7 +124,7 @@ A **tensor** is the primary data structure. It is a multi-dimensional array simi
 | 0 (scalar)  | `42`               | `()`         |  Single number that has no direction. zero dimensions.  |
 | 1 (vector)  | `[1.0, 2.0, 3.0]`  | `(3,)`       |  One dimensional tensor, ordered list of numbers. 1 dimensional  |
 | 2 (matrix)  | `[[1, 2], [3, 4]]` | `(2, 2)`     | Rows and columns, two dimensional    |
-| 3+          | Image data, etc.   | `(batch, height, width, channels)` | Used for things like image data  |
+| 3+  (n-D Tensor)   | Image data, etc.   | `(batch, height, width, channels)` | Used for things like image data (rank 4)  |
 
 ```python
 import tensorflow as tf
@@ -123,16 +139,84 @@ print("Vector:", vector)
 print("Matrix shape:", matrix.shape)
 ```
 
-- Tensors provide unified data representation for consisent and seamless handling of data.
-- Tensors are designed to be efficiently stored on GPUs for parallel processing.
-- Tensors are integral to how Neural networks learn.
+- Tensors provide unified data representation for consisent and seamless handling of data - They are integral to how neural networks learn.
+
+## TensorFlow on Github
+
+The repository can be thought of as frontend (Python, intuitive APIs, `tensorflow/python`) and backend (C++, executes computations, memory, devices, `tensorflow/core/`, `tensorflow/stream_executor/`).
+
+- The build system used is **Bazel**, and build instructions are located in `BUILD` files throughout the repo.
+
+|Directory|Purpose|
+|---------|-------|
+|`tensorflow/`| Python and C++ Source Code for TF|
+|`third_party/`| External dependencies and wrappers (cuDNN, Eigen, XLA)|
+|`tools/`| Developer utilities, codegen scripts, build helpers|
+|`ci/`| Continuous Integration configs and scripts|
+|`.github`|Github-specific workflows and issue templates|
+
+### Key Files
+
+- `WORKSPACE`: Bazel workspace definitions. Declares external dependencies.
+- `BUILD`, `*BUILD`: Bazel build targets (libs, binaries, tests) for various components.
+- `configure.py`: System detection (CUDA, MKL) and build config generator.
+- `.bazelrc`, `.bazelversion`: Bazel tuning and version pinning.
+- `README.md`, `CONTRIBUTING.md`, `LICENSE`: Docs and Governance.
+- `requirements_lock_*.txt`: Python dependency locks for various versions.
+
+### Directory Breakdown
+
+A general breakdown of the major directories (non-exhaustive).
+
+**tensorflow/**: Contains submodules for every major component.
+- Low-level Operations and Kernels
+    - `core/`: C++ implementation of TF's runtime, graph execution, and memory management.
+    - `c/`: C API bindings for TF.
+    - `lite/`: TF Lite, optimized for mobile and embedded devices.
+    - `compiler/`: MLIR and XLA compiler infrastructure
+- APIs and Python Wrappers
+    - `python/`: Python API definitions, decorators, high-level abstractions.
+    - `python/eager/`: Eager execution engine.
+    - `python/keras/`: Keras integration.
+    - `python/framework/`: Core python framework utilities (tensors, ops, sessions).
+    - `python/ops/`: Python wrappers for ops (math, image, nn).
+- Utilities and Extensions
+    - `tools/`: includes `pip_package/` for building the pip wheel, and `ci_build/` for Docker and CI.
+    - `examples/`: Sample models and training scripts (**less emphasized**).
+
+**third_party/**: Isolates external dependencies and custom build rules. Ensures reproducability.
+- Select Third party dirs
+    - `xla/`: XLA is a Just-in-Time compiler for TensorFlow graphs.
+    - `boringssl/`: Contains BoringSSL, google developed for of OpenSSL.
+    - `googleapis/`: contains client library and proto buffer definitions for cloud integration.
+
+**ci/**: Contains the scripts and configurations for CI and build/test automation.
+- Subfolders
+    - `devinfra/`: managed by TF DevInfra team but not officially part of build/test/release.
+    - `official/`: Offical build/test scripts.
+
 
 
 ## Installing Tensorflow
 
+- Install the pre-compiled Python Wheel containing .dll (Windows) and .so (Linux):
+
 ```bash
 pip install tensorflow
+# Install with GPU support
+pip install tensorflow[and-cuda]
+# Install in Anaconda environment
+conda install -c conda-forge tensorflow
 ```
+
+- Verify Installation:
+
+```python
+import tensorflow as tf
+print(tf.__version__)
+print("Number of GPUs available: ", len(tf.config.list_physical_devices('GPU')))
+```
+
 
 ## Tensorflow operations
 
