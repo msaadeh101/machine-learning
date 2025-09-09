@@ -7,7 +7,6 @@ This guide walks you from **zero knowledge of TensorFlow** to confidently buildi
 
 1. [What is TensorFlow?](#what-is-tensorflow)
 1. [What is a Tensor?](#what-is-a-tensor)
-1. [TensorFlow on Github](#tensorflow-on-github)
 1. [Installing TensorFlow](#installing-tensorflow)
 1. [Tensor Operations](#tensor-operations)
 1. [Building Your First Neural Network](#building-your-first-neural-network)
@@ -140,61 +139,6 @@ print("Matrix shape:", matrix.shape)
 ```
 
 - Tensors provide unified data representation for consisent and seamless handling of data - They are integral to how neural networks learn.
-
-## TensorFlow on Github
-
-The repository can be thought of as frontend (Python, intuitive APIs, `tensorflow/python`) and backend (C++, executes computations, memory, devices, `tensorflow/core/`, `tensorflow/stream_executor/`).
-
-- The build system used is **Bazel**, and build instructions are located in `BUILD` files throughout the repo.
-
-|Directory|Purpose|
-|---------|-------|
-|`tensorflow/`| Python and C++ Source Code for TF|
-|`third_party/`| External dependencies and wrappers (cuDNN, Eigen, XLA)|
-|`tools/`| Developer utilities, codegen scripts, build helpers|
-|`ci/`| Continuous Integration configs and scripts|
-|`.github`|Github-specific workflows and issue templates|
-
-### Key Files
-
-- `WORKSPACE`: Bazel workspace definitions. Declares external dependencies.
-- `BUILD`, `*BUILD`: Bazel build targets (libs, binaries, tests) for various components.
-- `configure.py`: System detection (CUDA, MKL) and build config generator.
-- `.bazelrc`, `.bazelversion`: Bazel tuning and version pinning.
-- `README.md`, `CONTRIBUTING.md`, `LICENSE`: Docs and Governance.
-- `requirements_lock_*.txt`: Python dependency locks for various versions.
-
-### Directory Breakdown
-
-A general breakdown of the major directories (non-exhaustive).
-
-**tensorflow/**: Contains submodules for every major component.
-- Low-level Operations and Kernels
-    - `core/`: C++ implementation of TF's runtime, graph execution, and memory management.
-    - `c/`: C API bindings for TF.
-    - `lite/`: TF Lite, optimized for mobile and embedded devices.
-    - `compiler/`: MLIR and XLA compiler infrastructure
-- APIs and Python Wrappers
-    - `python/`: Python API definitions, decorators, high-level abstractions.
-    - `python/eager/`: Eager execution engine.
-    - `python/keras/`: Keras integration.
-    - `python/framework/`: Core python framework utilities (tensors, ops, sessions).
-    - `python/ops/`: Python wrappers for ops (math, image, nn).
-- Utilities and Extensions
-    - `tools/`: includes `pip_package/` for building the pip wheel, and `ci_build/` for Docker and CI.
-    - `examples/`: Sample models and training scripts (**less emphasized**).
-
-**third_party/**: Isolates external dependencies and custom build rules. Ensures reproducability.
-- Select Third party dirs
-    - `xla/`: XLA is a Just-in-Time compiler for TensorFlow graphs.
-    - `boringssl/`: Contains BoringSSL, google developed for of OpenSSL.
-    - `googleapis/`: contains client library and proto buffer definitions for cloud integration.
-
-**ci/**: Contains the scripts and configurations for CI and build/test automation.
-- Subfolders
-    - `devinfra/`: managed by TF DevInfra team but not officially part of build/test/release.
-    - `official/`: Offical build/test scripts.
-
 
 
 ## Installing Tensorflow
