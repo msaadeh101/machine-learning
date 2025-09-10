@@ -270,3 +270,14 @@ Build Options:
 - **Incremental builds**: Sophisticated caching to reduce CI times from hours to minutes
 
 The packaging and distribution system represents one of TensorFlow's most complex engineering challenges, requiring careful balance between user convenience, build system maintainability, and distribution costs.
+
+## Testing Strategy
+
+**Test Types**
+- **Unit Tests**: small, fast, cover individual modules.
+- **Integration Tests**: Larger texts that exercise multiple components (training loop + saved model + serving).
+- **Hardware Tests**: CPU/GPU/TPU tests that validate kernels on devices - slower, running in specialized CI. Cuda Runtime validation, memory management, multi-gpu coordination, mixed precision (FP16/BF16 numerical accuracy verification), TPU sharding behavior.
+- **Perf and Benchmark Tests**: Measure throughput/latency, regression checks for performance drift.
+- **End-to-end tests**: build wheel, install, run example training, export SavedModel and load in TF-Serving.
+
+**Note**: Do not import tf for tiny unit test, utilize bazel test to run on individual test targets and only depend on submodules.
