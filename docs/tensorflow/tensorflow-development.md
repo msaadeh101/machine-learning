@@ -64,7 +64,7 @@ A general breakdown of the major directories (non-exhaustive).
     - `devinfra/`: managed by TF DevInfra team but not officially part of build/test/release.
     - `official/`: Offical build/test scripts.
 
-## Processes
+## Development Processes
 
 The CONTRIBUTING.md contains the process to contribute code to the TensorFlow project.
 
@@ -79,3 +79,194 @@ The CONTRIBUTING.md contains the process to contribute code to the TensorFlow pr
 - If all tests pass, code is brought in using job called `copybara`
 5. **Copy to Google Internal codevase and run internal CI**
 - Make sure it integrates with rest of system.
+
+## Bazel Build System
+
+**Bazel** is Google's scalable, multi-language build system that covers any size codebase. Bazel was chosen for:
+- Hermetic builds: Reproducible builds with explicit dependencies.
+- Incremental Compilation: Only rebuilds what is changed.
+- Cross platform: Unified builds across Linux, MacOS, Windows.
+- Language agnostic: Handles C++, Python, CUDA, proto buffers.
+- Distributed builds: Can leverage remote execution.
+
+### BUILD Files Architecture
+
+Every dir with compatible code contains a BUILD file (or BUILD.bazel).
+
+- Example snippet that defines a C++ library target `tf_cc_library`
+
+```python
+# Example BUILD file structure
+load("//tensorflow:tensorflow.bzl", "tf_cc_library")
+
+tf_cc_library(
+    name = "framework",
+    srcs = ["framework.cc"],
+    hdrs = ["framework.h"],
+    deps = [
+        "//tensorflow/core:lib",
+        "@com_google_absl//absl/strings",
+    ],
+    visibility = ["//tensorflow:internal"],
+)
+```
+|Field	|Description|
+|-------|------------|
+|`name`	|The name of the Bazel target (`//tensorflow:framework`)|
+|`srcs`	|Source files for the library (`framework.cc`)|
+|`hdrs`	|Public headers (`framework.h`) exposed to dependents|
+|`deps`	|Dependencies needed to compile this library:<br>• `//tensorflow/core:lib`: internal TensorFlow core library<br>• `@com_google_absl//absl/strings`: Abseil string utilities|
+|`visibility`	|Restricts who can depend on this target. Only targets in `//tensorflow:internal` can use it|
+
+### WORKSPACE Internals
+
+The WORKSPACE file defines:
+1. External repos via http_archive, git_repository, etc.
+1. Repository rules for dynamic dependency resolution.
+1. Toolchain registration for different platforms.
+1. Custom repository rules like @local_config_cuda (populated by running custom repo rules invoked in WORKSPACE file).
+
+### Build Configuration System
+
+TensorFlow now uses **LLVM/Clang 17** as the default compiler starting with TensorFlow 2.13. The configuration process:
+
+1. Run `./configure` to detect system capabilities.
+1. Generates platform-specific `.bazelrc` settings.
+1. Detects `CUDA`, `Python` versions, optimization flags.
+1. Creates symbolic links for external dependencies.
+
+## Packaging and Distribution
+
+TensorFlow's **Python wheel generation** centers around the `build_pip_package` script, which orchestrates the process of creating distributable packages from the repo.
+
+```bash
+# Simplified build command
+bazel build //tensorflow/tools/pip_package:build_pip_package
+./bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
+```
+
+**Build pipeline stages**:
+
+1. **Bazel Build Phase**: Compiles all C++/CUDA sources, Python extensions, and proto definitions.
+2. **Wheel Assembly**: Collects built artifacts, Python source files, and metadata into wheel structure.
+3. **Native Library Bundling**: Includes compiled shared libraries (`.so` files) with proper `RPATH` configuration.
+4. **Metadata Generation**: Creates `WHEEL`, `METADATA`, and dependency specifications.
+
+**manylinux** Compatibility is maintained by leveraging docker-based build environments.
+- glibc version constraints: Must target oldest supported glibc.
+- Symbol versioning: Use compatible symbol versioning.
+- Library building: Third-party libs are statically linked or bundled.
+- Audit tools: `auditwheel` validates and repairs wheels post-build.
+
+```dockerfile
+# Example build container setup
+FROM tensorflow/build:latest-python3.9
+RUN /tensorflow/tools/ci_build/builds/build_pip_packages.sh
+```
+
+### Nightly Build Infrastructure
+
+The `tf-nightly` distribution performs continuous validation, feature previews, and build system testing/validation.
+
+### Java Ecosystem
+
+- Native libraries (JNI):
+
+```cpp
+// Generated JNI bindings
+JNIEXPORT jlong JNICALL Java_org_tensorflow_TensorFlow_allocate
+  (JNIEnv *, jclass, jint, jlongArray);
+```
+1. C++ API Compilation
+1. JNI Wrapper generation
+1. JAR assembly
+1. Maven deployment
+
+```xml
+<dependency>
+    <groupId>org.tensorflow</groupId>
+    <artifactId>tensorflow</artifactId>
+    <version>2.x.x</version>
+</dependency>
+```
+
+### C API Distribution
+
+The libtensorflow C API enables integration with non-Python environments.
+
+```txt
+libtensorflow/
+├── lib/
+│   ├── libtensorflow.so       # Core library
+│   └── libtensorflow_framework.so
+├── include/
+│   └── tensorflow/c/
+│       ├── c_api.h            # Primary C interface
+│       └── c_api_experimental.h
+└── LICENSE
+```
+
+### Mobile Platforms
+
+Android Archive AAR Builds require specialized toolchain configuration.
+
+```python
+# android_configure.bzl
+android_ndk_repository(
+    name = "androidndk",
+    path = "/opt/android-ndk-r21e",
+)
+```
+
+### iOS Framework
+
+iOS builds face unique constraints around dynamic linking and App Store policies.
+
+```objc
+// TensorFlowLiteC framework integration
+#import <TensorFlowLiteC/TensorFlowLiteC.h>
+TfLiteInterpreter* interpreter = TfLiteInterpreterCreate(model, options);
+```
+
+### GPU Build Complexity
+
+CUDA/cuDNN Integration challenges: GPU-enabled TensorFlow wheels face real packaging constraints.
+
+```bash
+# Required CUDA runtime libraries
+libcudart.so.11.0
+libcublas.so.11
+libcurand.so.10
+libcusolver.so.11
+libcusparse.so.11
+libcudnn.so.8
+```
+
+### Ahead of Time Compilation
+
+**AOT**, provided by TensorFlow via `XLA`. Build process includes graph freezing, XLA compilation, Static linking and Header generation.
+
+```cpp
+// Generated AOT interface
+#include "my_model.h"
+MyModel model;
+model.set_arg0_data(input_data);
+model.Run();
+float* output = model.result0_data();
+```
+
+### Trade-offs and Engineering Decisions
+
+**Distribution Size vs. Compatibility**
+| Approach | Wheel Size | Compatibility | Maintenance | 
+|-----------| ---------| -------------| -------------| 
+| System deps| ~500MB| Fragile| Low| 
+| Bundled runtime| ~2GB| Robust| High| 
+| Multiple variants| ~500MB each|  Targeted| Very High| 
+
+Build Options:
+- **Full matrix**: `~20 platforms × 4 Python versions × 2 GPU variants = 160 combinations`
+- **Selective building**: Strategic subset based on usage analytics
+- **Incremental builds**: Sophisticated caching to reduce CI times from hours to minutes
+
+The packaging and distribution system represents one of TensorFlow's most complex engineering challenges, requiring careful balance between user convenience, build system maintainability, and distribution costs.
